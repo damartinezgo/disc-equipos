@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
     const filaIdx = idx + 2 // fila 1 = encabezados
     const fila = hojaRespuestas.getRow(filaIdx)
     fila.getCell(1).value = r.user_id
-    fila.getCell(2).value = (r.perfiles as unknown as { nombre: string }).nombre
-    fila.getCell(3).value = (r.perfiles as unknown as { equipo: string }).equipo
+    fila.getCell(2).value = (r.perfiles as unknown as { nombre: string }[])[0]?.nombre
+    fila.getCell(3).value = (r.perfiles as unknown as { equipo: string }[])[0]?.equipo
     fila.getCell(4).value = r.fecha_aplicacion ? new Date(r.fecha_aplicacion) : null
 
     for (let item = 1; item <= 32; item++) {
@@ -70,8 +70,8 @@ export async function POST(req: NextRequest) {
     const fila = hojaScoring.getRow(filaIdx)
     const persona = respuestas.find((r) => r.user_id === s.user_id)
     fila.getCell(1).value = s.user_id
-    fila.getCell(2).value = (persona?.perfiles as unknown as { nombre: string })?.nombre ?? ''
-    fila.getCell(3).value = (persona?.perfiles as unknown as { equipo: string })?.equipo ?? ''
+    fila.getCell(2).value = (persona?.perfiles as unknown as { nombre: string }[])?.[0]?.nombre ?? ''
+    fila.getCell(3).value = (persona?.perfiles as unknown as { equipo: string }[])?.[0]?.equipo ?? ''
     fila.getCell(4).value = s.d_global
     fila.getCell(5).value = s.i_global
     fila.getCell(6).value = s.s_global
