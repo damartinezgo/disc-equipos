@@ -1,0 +1,898 @@
+[
+  {
+    "item": 1,
+    "modulo": "Orientación general de trabajo",
+    "categoria": "Perfil de trabajo",
+    "enunciado": "Cuando participo en un equipo de trabajo, tiendo a:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Impulsar al grupo para avanzar y lograr resultados concretos.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Generar entusiasmo y mantener una actitud positiva entre las personas.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Apoyar a otros para que el trabajo fluya de manera colaborativa.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Cuidar que el trabajo se haga con orden, precisión y calidad.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 2,
+    "modulo": "Orientación general de trabajo",
+    "categoria": "Perfil de trabajo",
+    "enunciado": "Cuando recibo una tarea nueva, normalmente prefiero:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Revisar la información disponible antes de definir cómo proceder.",
+        "disc": "C"
+      },
+      {
+        "letra": "B",
+        "texto": "Asegurarme de que todos estén alineados y se sientan apoyados.",
+        "disc": "S"
+      },
+      {
+        "letra": "C",
+        "texto": "Conversar con otros para conectar ideas y generar energía alrededor de la tarea.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Entender el objetivo y comenzar a actuar rápidamente.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 3,
+    "modulo": "Orientación general de trabajo",
+    "categoria": "Perfil de trabajo",
+    "enunciado": "En el desarrollo de un proyecto, suelo aportar más cuando:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Hay metas exigentes que requieren decisión y empuje.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Se necesita comunicar, motivar o involucrar a otras personas.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Es necesario analizar detalles, riesgos o estándares de calidad.",
+        "disc": "C"
+      },
+      {
+        "letra": "D",
+        "texto": "Se requiere cooperación, paciencia y apoyo constante.",
+        "disc": "S"
+      }
+    ]
+  },
+  {
+    "item": 4,
+    "modulo": "Orientación general de trabajo",
+    "categoria": "Perfil de trabajo",
+    "enunciado": "En mi forma habitual de trabajar, me identifico más con:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Mantener la estabilidad, la colaboración y el buen ambiente.",
+        "disc": "S"
+      },
+      {
+        "letra": "B",
+        "texto": "Trabajar con método, exactitud y criterios claros.",
+        "disc": "C"
+      },
+      {
+        "letra": "C",
+        "texto": "Crear buenas relaciones y movilizar a otros con entusiasmo.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Enfocarme en lograr resultados y superar obstáculos.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 5,
+    "modulo": "Toma de decisiones",
+    "categoria": "Perfil de trabajo",
+    "enunciado": "Cuando debo tomar una decisión importante, tiendo a:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Avanzar con rapidez y asumir la responsabilidad del resultado.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Conversar con otros para generar apoyo y compromiso.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Considerar cómo la decisión afectará al equipo.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Revisar datos, criterios y posibles riesgos antes de actuar.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 6,
+    "modulo": "Toma de decisiones",
+    "categoria": "Perfil de trabajo",
+    "enunciado": "Cuando hay poco tiempo para decidir, normalmente prefiero:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Identificar la información mínima necesaria para reducir errores.",
+        "disc": "C"
+      },
+      {
+        "letra": "B",
+        "texto": "Evitar decisiones apresuradas que puedan afectar la estabilidad del equipo.",
+        "disc": "S"
+      },
+      {
+        "letra": "C",
+        "texto": "Buscar rápidamente opiniones que ayuden a generar consenso.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Tomar una decisión práctica y ajustar sobre la marcha si es necesario.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 7,
+    "modulo": "Toma de decisiones",
+    "categoria": "Perfil de trabajo",
+    "enunciado": "Antes de comprometerme con una decisión, suelo darle más importancia a:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Que permita avanzar hacia el objetivo sin perder tiempo.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Que las personas involucradas se sientan motivadas y convencidas.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Que el equipo pueda adaptarse sin tensiones innecesarias.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Que existan fundamentos claros y evidencia suficiente.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 8,
+    "modulo": "Toma de decisiones",
+    "categoria": "Perfil de trabajo",
+    "enunciado": "Cuando el equipo no logra decidir, mi tendencia natural es:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Ordenar la información y establecer criterios para decidir mejor.",
+        "disc": "C"
+      },
+      {
+        "letra": "B",
+        "texto": "Escuchar las posiciones y buscar una salida aceptable para todos.",
+        "disc": "S"
+      },
+      {
+        "letra": "C",
+        "texto": "Proponer una dirección clara y empujar la decisión.",
+        "disc": "D"
+      },
+      {
+        "letra": "D",
+        "texto": "Animar la conversación para que las personas se involucren.",
+        "disc": "I"
+      }
+    ]
+  },
+  {
+    "item": 9,
+    "modulo": "Comunicación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Cuando comunico una idea en el trabajo, tiendo a:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Ir directo al punto y enfocarme en lo que se debe lograr.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Expresarla con entusiasmo para captar el interés de los demás.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Cuidar el tono para que las personas se sientan escuchadas.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Presentarla de forma ordenada, con datos y argumentos claros.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 10,
+    "modulo": "Comunicación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Cuando necesito recibir información para hacer mi trabajo, prefiero que me la entreguen:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Con suficiente contexto para entender el impacto en las personas.",
+        "disc": "S"
+      },
+      {
+        "letra": "B",
+        "texto": "De forma detallada, precisa y bien estructurada.",
+        "disc": "C"
+      },
+      {
+        "letra": "C",
+        "texto": "En una conversación dinámica donde pueda intercambiar ideas.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "De manera breve, clara y enfocada en la acción esperada.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 11,
+    "modulo": "Comunicación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "En una reunión de equipo, normalmente tiendo a:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Orientar la conversación hacia decisiones y próximos pasos.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Participar activamente, aportar ideas y animar el ambiente.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Escuchar con atención y facilitar que todos puedan expresarse.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Ordenar los puntos tratados y precisar acuerdos o inconsistencias.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 12,
+    "modulo": "Comunicación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Cuando hay un malentendido en el trabajo, suelo:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Revisar los hechos para identificar dónde se produjo la confusión.",
+        "disc": "C"
+      },
+      {
+        "letra": "B",
+        "texto": "Escuchar con calma las distintas versiones antes de responder.",
+        "disc": "S"
+      },
+      {
+        "letra": "C",
+        "texto": "Conversar con las personas para recuperar apertura y confianza.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Aclarar rápidamente qué se espera y cómo avanzar.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 13,
+    "modulo": "Motivadores",
+    "categoria": "Motivación y compromiso",
+    "enunciado": "En el trabajo, me siento más motivado cuando:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Tengo metas exigentes que me desafían a lograr resultados.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Recibo reconocimiento por mis aportes y puedo influir positivamente en otros.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Trabajo en un ambiente de confianza, colaboración y apoyo mutuo.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Cuento con criterios claros para hacer un trabajo preciso y de calidad.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 14,
+    "modulo": "Motivadores",
+    "categoria": "Motivación y compromiso",
+    "enunciado": "Una tarea me resulta especialmente atractiva cuando:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Contribuye al bienestar del equipo y fortalece la cooperación.",
+        "disc": "S"
+      },
+      {
+        "letra": "B",
+        "texto": "Requiere análisis, método y atención cuidadosa a los detalles.",
+        "disc": "C"
+      },
+      {
+        "letra": "C",
+        "texto": "Me permite asumir responsabilidad y demostrar capacidad de ejecución.",
+        "disc": "D"
+      },
+      {
+        "letra": "D",
+        "texto": "Me da la oportunidad de interactuar, persuadir o generar entusiasmo.",
+        "disc": "I"
+      }
+    ]
+  },
+  {
+    "item": 15,
+    "modulo": "Motivadores",
+    "categoria": "Motivación y compromiso",
+    "enunciado": "Me comprometo más con un proyecto cuando:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Veo un objetivo retador y tengo margen para decidir cómo alcanzarlo.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Puedo compartir ideas, movilizar personas y recibir retroalimentación positiva.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Siento que hay estabilidad, confianza y apoyo entre quienes participan.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Entiendo claramente los estándares, los riesgos y la forma correcta de hacerlo.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 16,
+    "modulo": "Motivadores",
+    "categoria": "Motivación y compromiso",
+    "enunciado": "Para mantener mi energía en el trabajo, valoro especialmente:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Trabajar con información suficiente, orden y altos estándares de calidad.",
+        "disc": "C"
+      },
+      {
+        "letra": "B",
+        "texto": "Contar con relaciones laborales respetuosas, constantes y confiables.",
+        "disc": "S"
+      },
+      {
+        "letra": "C",
+        "texto": "Participar en espacios donde pueda comunicar, conectar y ser reconocido.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Tener autonomía para resolver problemas y avanzar hacia resultados.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 17,
+    "modulo": "Delegación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Cuando me delegan una responsabilidad, trabajo mejor si:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Me indican el resultado esperado y me dan libertad para decidir cómo lograrlo.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Entiendo el propósito de la tarea y puedo involucrar a otras personas.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Tengo instrucciones claras, criterios definidos y estándares de calidad.",
+        "disc": "C"
+      },
+      {
+        "letra": "D",
+        "texto": "Recibo orientación suficiente y sé que puedo consultar cuando lo necesite.",
+        "disc": "S"
+      }
+    ]
+  },
+  {
+    "item": 18,
+    "modulo": "Delegación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Al asumir una tarea nueva, prefiero que mi jefe:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Me acompañe al inicio para asegurar que voy en la dirección correcta.",
+        "disc": "S"
+      },
+      {
+        "letra": "B",
+        "texto": "Me entregue información detallada sobre el proceso, los requisitos y los riesgos.",
+        "disc": "C"
+      },
+      {
+        "letra": "C",
+        "texto": "Me explique a quién impacta la tarea y cómo puedo generar apoyo alrededor de ella.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Defina el objetivo, el plazo y el nivel de autoridad que tengo para actuar.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 19,
+    "modulo": "Delegación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Cuando recibo una responsabilidad importante, me resulta más útil:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Tener un reto claro y espacio para resolverlo con iniciativa propia.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Poder conversar la tarea, aportar ideas y coordinar con otros.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Contar con apoyo disponible y expectativas comunicadas de manera gradual.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Conocer desde el inicio los criterios de éxito y las condiciones que debo cumplir.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 20,
+    "modulo": "Delegación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Para ejecutar bien una tarea delegada, suelo necesitar principalmente:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Claridad sobre los pasos, la información disponible y el nivel de calidad esperado.",
+        "disc": "C"
+      },
+      {
+        "letra": "B",
+        "texto": "Un ambiente de confianza donde pueda pedir apoyo si surgen dificultades.",
+        "disc": "S"
+      },
+      {
+        "letra": "C",
+        "texto": "Espacios de interacción para alinear, comunicar y movilizar a otros.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Autonomía para tomar decisiones y avanzar hacia el resultado.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 21,
+    "modulo": "Acompañamiento, seguimiento y retroalimentación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Cuando mi jefe hace seguimiento a mi trabajo, prefiero que:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Se enfoque en los resultados esperados y me dé espacio para alcanzarlos.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Converse conmigo de manera dinámica y reconozca los avances logrados.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Me acompañe con disposición de apoyo y un tono respetuoso.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Revise el avance con criterios claros, datos y observaciones específicas.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 22,
+    "modulo": "Acompañamiento, seguimiento y retroalimentación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Cuando recibo retroalimentación sobre mi desempeño, me resulta más útil que sea:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Cuidadosa, privada y expresada de forma respetuosa.",
+        "disc": "S"
+      },
+      {
+        "letra": "B",
+        "texto": "Específica, objetiva y basada en hechos observables.",
+        "disc": "C"
+      },
+      {
+        "letra": "C",
+        "texto": "Directa, breve y centrada en lo que debo mejorar para lograr el objetivo.",
+        "disc": "D"
+      },
+      {
+        "letra": "D",
+        "texto": "Conversada, positiva y conectada con el impacto de mi aporte.",
+        "disc": "I"
+      }
+    ]
+  },
+  {
+    "item": 23,
+    "modulo": "Acompañamiento, seguimiento y retroalimentación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Durante la ejecución de una tarea importante, trabajo mejor cuando mi jefe:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Me permite avanzar con autonomía y revisa principalmente los resultados.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Mantiene espacios de conversación para intercambiar ideas y reconocer avances.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Está disponible para orientar y apoyar si encuentro dificultades.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Verifica que el trabajo cumpla con los estándares y criterios definidos.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 24,
+    "modulo": "Acompañamiento, seguimiento y retroalimentación",
+    "categoria": "Gestión directa del jefe",
+    "enunciado": "Para mejorar mi desempeño, valoro especialmente que mi jefe:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Me muestre evidencias concretas y recomendaciones precisas de mejora.",
+        "disc": "C"
+      },
+      {
+        "letra": "B",
+        "texto": "Me entregue orientación con paciencia y cuidado por la relación.",
+        "disc": "S"
+      },
+      {
+        "letra": "C",
+        "texto": "Destaque mis aportes y me ayude a mantener entusiasmo por el trabajo.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Me diga con claridad qué resultado espera y qué debo ajustar.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 25,
+    "modulo": "Manejo de conflicto",
+    "categoria": "Dinámica de equipo",
+    "enunciado": "Cuando surge un desacuerdo en el equipo, tiendo a:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Enfrentar el tema de manera directa para resolverlo cuanto antes.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Conversar con las personas para abrir el diálogo y buscar entendimiento.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Escuchar con calma y cuidar que la relación no se deteriore.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Revisar los hechos y criterios antes de tomar posición.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 26,
+    "modulo": "Manejo de conflicto",
+    "categoria": "Dinámica de equipo",
+    "enunciado": "Cuando hay tensión entre compañeros, mi primera reacción suele ser:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Reducir la tensión y ayudar a que el ambiente se mantenga tranquilo.",
+        "disc": "S"
+      },
+      {
+        "letra": "B",
+        "texto": "Identificar la causa del problema y separar hechos de interpretaciones.",
+        "disc": "C"
+      },
+      {
+        "letra": "C",
+        "texto": "Facilitar una conversación para que las personas expresen sus puntos de vista.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Señalar el problema con claridad y proponer una solución práctica.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 27,
+    "modulo": "Manejo de conflicto",
+    "categoria": "Dinámica de equipo",
+    "enunciado": "Cuando no estoy de acuerdo con una decisión, normalmente prefiero:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Expresar mi posición de forma clara y defender lo que considero correcto.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Plantear mis ideas de manera persuasiva para influir en la decisión.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Presentar argumentos, datos o criterios que sustenten mi punto de vista.",
+        "disc": "C"
+      },
+      {
+        "letra": "D",
+        "texto": "Manifestar mis inquietudes con cuidado para evitar confrontaciones innecesarias.",
+        "disc": "S"
+      }
+    ]
+  },
+  {
+    "item": 28,
+    "modulo": "Manejo de conflicto",
+    "categoria": "Dinámica de equipo",
+    "enunciado": "Para resolver un conflicto laboral, considero más importante:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Aclarar responsabilidades, hechos y criterios para evitar confusiones.",
+        "disc": "C"
+      },
+      {
+        "letra": "B",
+        "texto": "Proteger la confianza y mantener un trato respetuoso entre todos.",
+        "disc": "S"
+      },
+      {
+        "letra": "C",
+        "texto": "Recuperar la comunicación y lograr que las personas se comprometan.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Tomar una decisión y avanzar sin prolongar la tensión.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 29,
+    "modulo": "Rol natural en el equipo",
+    "categoria": "Dinámica de equipo",
+    "enunciado": "Dentro de un equipo, suelo aportar principalmente cuando:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Se necesita empujar al grupo para avanzar y lograr resultados.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Se requiere conectar personas, ideas y generar entusiasmo.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Es importante mantener la colaboración y el apoyo entre todos.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Se necesita organizar el trabajo y cuidar la calidad de lo que se entrega.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 30,
+    "modulo": "Rol natural en el equipo",
+    "categoria": "Dinámica de equipo",
+    "enunciado": "Cuando el equipo enfrenta un desafío importante, tiendo a asumir el rol de:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Quien sostiene la cooperación y ayuda a que nadie quede aislado.",
+        "disc": "S"
+      },
+      {
+        "letra": "B",
+        "texto": "Quien revisa los detalles y asegura que el trabajo sea confiable.",
+        "disc": "C"
+      },
+      {
+        "letra": "C",
+        "texto": "Quien anima al grupo y facilita que otros se involucren.",
+        "disc": "I"
+      },
+      {
+        "letra": "D",
+        "texto": "Quien toma iniciativa y ayuda a definir una dirección clara.",
+        "disc": "D"
+      }
+    ]
+  },
+  {
+    "item": 31,
+    "modulo": "Rol natural en el equipo",
+    "categoria": "Dinámica de equipo",
+    "enunciado": "Cuando un equipo necesita organizarse mejor, mi tendencia natural es:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Enfocar al grupo en prioridades, decisiones y resultados concretos.",
+        "disc": "D"
+      },
+      {
+        "letra": "B",
+        "texto": "Promover conversaciones que generen participación y compromiso.",
+        "disc": "I"
+      },
+      {
+        "letra": "C",
+        "texto": "Asegurar que todos entiendan su papel y se sientan apoyados.",
+        "disc": "S"
+      },
+      {
+        "letra": "D",
+        "texto": "Definir criterios, ordenar información y aclarar procedimientos.",
+        "disc": "C"
+      }
+    ]
+  },
+  {
+    "item": 32,
+    "modulo": "Rol natural en el equipo",
+    "categoria": "Dinámica de equipo",
+    "enunciado": "El equipo suele beneficiarse más de mí cuando:",
+    "opciones": [
+      {
+        "letra": "A",
+        "texto": "Se requiere rigor, análisis y cuidado por los detalles importantes.",
+        "disc": "C"
+      },
+      {
+        "letra": "B",
+        "texto": "Es necesario fortalecer la confianza, la escucha y la colaboración.",
+        "disc": "S"
+      },
+      {
+        "letra": "C",
+        "texto": "Hace falta determinación para cerrar temas y superar obstáculos.",
+        "disc": "D"
+      },
+      {
+        "letra": "D",
+        "texto": "Se necesita energía positiva para movilizar y mantener motivadas a las personas.",
+        "disc": "I"
+      }
+    ]
+  }
+]
