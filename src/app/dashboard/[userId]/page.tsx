@@ -50,8 +50,8 @@ export default async function DetallePersonaPage({
     <main className="min-h-screen bg-[#F7F8FA] px-4 py-8">
       <div className="mx-auto max-w-4xl">
         <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <h1 className="text-2xl font-semibold text-[#1F2937]">{scoring.perfiles.nombre}</h1>
-          <p className="text-sm text-gray-500">{scoring.perfiles.equipo}</p>
+          <h1 className="text-2xl font-semibold text-[#1F2937]">{scoring.perfiles[0].nombre}</h1>
+          <p className="text-sm text-gray-500">{scoring.perfiles[0].equipo}</p>
 
           {textoPerfil && (
             <div className="mt-4 rounded-xl bg-[#F7F8FA] p-4">

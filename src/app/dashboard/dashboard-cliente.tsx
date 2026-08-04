@@ -25,7 +25,7 @@ type Persona = {
   estilo_principal: string
   estilo_secundario: string
   perfil_combinado: string
-  perfiles: { nombre: string; equipo: string; created_at: string }
+  perfiles: { nombre: string; equipo: string; created_at: string }[]
 }
 
 export default function DashboardCliente({
@@ -42,9 +42,9 @@ export default function DashboardCliente({
 
   const filtradas = useMemo(() => {
     return personas.filter((p) => {
-      if (filtroEquipo !== 'todos' && p.perfiles?.equipo !== filtroEquipo) return false
+      if (filtroEquipo !== 'todos' && p.perfiles?.[0]?.equipo !== filtroEquipo) return false
       if (filtroEstilo !== 'todos' && p.estilo_principal !== filtroEstilo) return false
-      if (busqueda && !p.perfiles?.nombre?.toLowerCase().includes(busqueda.toLowerCase()))
+      if (busqueda && !p.perfiles?.[0]?.nombre?.toLowerCase().includes(busqueda.toLowerCase()))
         return false
       return true
     })
@@ -140,8 +140,8 @@ export default function DashboardCliente({
             <tbody className="divide-y divide-gray-100">
               {filtradas.map((p) => (
                 <tr key={p.user_id} className="hover:bg-gray-50">
-                  <td className="px-5 py-3 font-medium text-gray-800">{p.perfiles?.nombre}</td>
-                  <td className="px-5 py-3 text-gray-500">{p.perfiles?.equipo}</td>
+                  <td className="px-5 py-3 font-medium text-gray-800">{p.perfiles?.[0]?.nombre}</td>
+                  <td className="px-5 py-3 text-gray-500">{p.perfiles?.[0]?.equipo}</td>
                   <td className="px-5 py-3">
                     <span
                       className="rounded-full px-2.5 py-1 text-xs font-semibold text-white"
