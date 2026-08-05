@@ -20,6 +20,12 @@ export default async function Navbar() {
     .eq('user_id', user.id)
     .maybeSingle()
 
+  const { data: respuesta } = await supabase
+    .from('respuestas')
+    .select('completado')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
   return (
     <nav className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -39,9 +45,15 @@ export default async function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-4 text-sm text-gray-600">
-              <Link href="/encuesta" className="transition hover:text-[#1F4E79]">
-                Mi encuesta
-              </Link>
+              {!respuesta?.completado ? (
+                <Link href="/encuesta" className="transition hover:text-[#1F4E79]">
+                  Mi encuesta
+                </Link>
+              ) : (
+                <Link href="/mis-resultados" className="transition hover:text-[#1F4E79]">
+                  Mis resultados
+                </Link>
+              )}
             </div>
           )}
         </div>

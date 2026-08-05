@@ -39,7 +39,7 @@ export default function EncuestaPage() {
         .maybeSingle()
 
       if (data?.completado) {
-        router.push('/encuesta/gracias')
+        router.push('/mis-resultados')
         return
       }
       if (data) {
@@ -104,7 +104,7 @@ export default function EncuestaPage() {
 
       await fetch('/api/scoring', { method: 'POST' })
 
-      router.push('/encuesta/gracias')
+      router.push('/mis-resultados')
       return
     }
 

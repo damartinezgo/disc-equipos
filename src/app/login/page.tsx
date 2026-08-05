@@ -20,16 +20,43 @@ export default function LoginPage() {
     setError(null)
     setCargando(true)
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
     setCargando(false)
 
-    if (signInError) {
+    if (signInError || !user) {
       setError('Correo o contraseña incorrectos.')
       return
     }
 
-    const destino = searchParams.get('siguiente') || '/encuesta'
-    router.push(destino)
+    // Si hay un destino explícito en la URL, respetarlo
+    const siguiente = searchParams.get('siguiente')
+    if (siguiente) {
+      router.push(siguiente)
+      router.refresh()
+      return
+    }
+
+    // Sin destino explícito: detectar rol y redirigir inteligentemente
+    const { data: esEncuestador } = await supabase
+      .from('encuestadores')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (esEncuestador) {
+      router.push('/dashboard')
+      router.refresh()
+      return
+    }
+
+    // Participante normal: ver si ya completó la encuesta
+    const { data: respuesta } = await supabase
+      .from('respuestas')
+      .select('completado')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    router.push(respuesta?.completado ? '/mis-resultados' : '/encuesta')
     router.refresh()
   }
 
