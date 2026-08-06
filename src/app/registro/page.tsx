@@ -49,7 +49,7 @@ export default function RegistroPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F7F8FA] px-4">
+    <main suppressHydrationWarning className="flex min-h-screen items-center justify-center bg-[#F7F8FA] px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
         <h1 className="text-2xl font-semibold text-[#1F2937]">Crear cuenta</h1>
         <p className="mt-1 text-sm text-gray-500">
