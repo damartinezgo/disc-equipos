@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import TerminosModal from '@/components/terminos-modal'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -13,6 +14,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mostrarTerminos, setMostrarTerminos] = useState(false)
+  const [usuarioLogueado, setUsuarioLogueado] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -36,6 +39,15 @@ export default function LoginPage() {
       return
     }
 
+    const aceptoTerminos = typeof window !== 'undefined'
+      ? localStorage.getItem('terminos_aceptados')
+      : null
+    if (!aceptoTerminos) {
+      setUsuarioLogueado(user.id)
+      setMostrarTerminos(true)
+      return
+    }
+
     const redirect = typeof window !== 'undefined' ? sessionStorage.getItem('redirect_after_login') : null
     if (redirect) {
       sessionStorage.removeItem('redirect_after_login')
@@ -56,6 +68,15 @@ export default function LoginPage() {
       return
     }
 
+    router.push('/encuesta')
+    router.refresh()
+  }
+
+  function confirmarTerminos() {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('terminos_aceptados', 'true')
+    }
+    setMostrarTerminos(false)
     router.push('/encuesta')
     router.refresh()
   }
@@ -111,6 +132,12 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+      {mostrarTerminos && (
+        <TerminosModal
+          onAccept={confirmarTerminos}
+          onClose={() => setMostrarTerminos(false)}
+        />
+      )}
     </main>
   )
 }
