@@ -150,18 +150,6 @@ export default function EncuestaPage() {
           </div>
         )}
 
-        <div className="mb-4 flex items-center justify-between">
-          <a
-            href="/encuesta/instrucciones"
-            className="text-xs font-medium text-[#1F4E79] underline underline-offset-2 hover:text-[#173A5C]"
-          >
-            Instrucciones
-          </a>
-          {!tieneProgresoGuardado && (
-            <span className="text-xs text-gray-400">Podés volver a leer las instrucciones cuando quieras</span>
-          )}
-        </div>
-
         {/* barra de progreso */}
         <div className="mb-8">
           <div className="mb-2 flex justify-between text-xs font-medium text-gray-500">
@@ -226,16 +214,23 @@ export default function EncuestaPage() {
           )}
 
           <div className="mt-8 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={anterior}
-              disabled={indice === 0}
-              className="text-sm font-medium text-gray-500 disabled:opacity-0"
-            >
-              ← Anterior
-            </button>
+              <button
+                type="button"
+                onClick={() => setMostrarBienvenida(true)}
+                className="text-sm font-medium text-[#1F4E79] underline underline-offset-2 hover:text-[#173A5C]"
+              >
+                Instrucciones
+              </button>
 
             <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={anterior}
+                disabled={indice === 0}
+                className="text-sm font-medium text-gray-500 disabled:opacity-0"
+              >
+                ← Anterior
+              </button>
               {guardando && <span className="text-xs text-[#1F4E79]">Guardando…</span>}
               <button
                 type="button"
