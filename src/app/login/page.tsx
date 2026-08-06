@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const supabase = createClient()
 
   const [email, setEmail] = useState('')
@@ -37,9 +36,10 @@ export default function LoginPage() {
       return
     }
 
-    const siguiente = searchParams.get('siguiente')
-    if (siguiente) {
-      router.push(siguiente)
+    const redirect = typeof window !== 'undefined' ? sessionStorage.getItem('redirect_after_login') : null
+    if (redirect) {
+      sessionStorage.removeItem('redirect_after_login')
+      router.push(redirect)
       router.refresh()
       return
     }

@@ -30,7 +30,10 @@ export default function EncuestaPage() {
     async function cargar() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        router.push('/login?siguiente=/encuesta')
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('redirect_after_login', '/encuesta')
+        }
+        router.push('/login')
         return
       }
       setUserId(user.id)

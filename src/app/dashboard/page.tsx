@@ -6,7 +6,12 @@ export default async function DashboardPage() {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login?siguiente=/dashboard')
+  if (!user) {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('redirect_after_login', '/dashboard')
+    }
+    redirect('/login')
+  }
 
   // Verifica que sea encuestador
   const { data: esEncuestador } = await supabase
