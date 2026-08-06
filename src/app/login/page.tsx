@@ -15,7 +15,6 @@ export default function LoginPage() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mostrarTerminos, setMostrarTerminos] = useState(false)
-  const [usuarioLogueado, setUsuarioLogueado] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -40,10 +39,10 @@ export default function LoginPage() {
     }
 
     const aceptoTerminos = typeof window !== 'undefined'
-      ? localStorage.getItem('terminos_aceptados')
-      : null
+      ? localStorage.getItem('terminos_aceptados') === 'true'
+      : false
+
     if (!aceptoTerminos) {
-      setUsuarioLogueado(user.id)
       setMostrarTerminos(true)
       return
     }
@@ -132,10 +131,10 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+
       {mostrarTerminos && (
         <TerminosModal
           onAccept={confirmarTerminos}
-          onClose={() => setMostrarTerminos(false)}
         />
       )}
     </main>

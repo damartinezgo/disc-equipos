@@ -4,10 +4,8 @@ import { useState } from 'react'
 
 export default function TerminosModal({
   onAccept,
-  onClose,
 }: {
   onAccept: () => void
-  onClose: () => void
 }) {
   const [acepta, setAcepta] = useState(false)
 
@@ -43,21 +41,13 @@ export default function TerminosModal({
             />
             Acepto los términos y condiciones
           </label>
-          <div className="flex gap-3">
-            <button
-              onClick={onClose}
-              className="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={onAccept}
-              disabled={!acepta}
-              className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Continuar
-            </button>
-          </div>
+          <button
+            onClick={onAccept}
+            disabled={!acepta}
+            className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Continuar
+          </button>
         </div>
       </div>
     </div>
