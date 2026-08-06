@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DISC Equipos",
-  description: "Evaluación de perfil DISC para equipos de trabajo",
+  title: "Desarrollo de Líderes y Equipo",
+  description: "Evaluación de Desarrollo de Líderes y Equipo",
   icons: {
     icon: "/logo-rizoma.svg",
   },

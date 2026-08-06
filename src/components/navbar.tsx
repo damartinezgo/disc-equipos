@@ -27,11 +27,11 @@ export default async function Navbar() {
           <Link href="/" className="flex items-center gap-3 transition hover:opacity-80">
             <img
               src="/logo-rizoma.svg"
-              alt="DISC Equipos"
-              className="h-8 w-auto"
+              alt="Desarrollo de Líderes y Equipo"
+              className="h-10 w-auto"
             />
             <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
-              DISC Equipos
+              Desarrollo de Líderes y Equipo
             </span>
           </Link>
 

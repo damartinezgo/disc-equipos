@@ -69,11 +69,11 @@ export async function POST(req: NextRequest) {
 
   // ── Construir el workbook desde cero ──────────────────────────────────────
   const workbook = new ExcelJS.Workbook()
-  workbook.creator = 'DISC Equipos'
+  workbook.creator = 'Desarrollo de Líderes y Equipo'
   workbook.created = new Date()
 
   // ── Hoja 1: Resultados ────────────────────────────────────────────────────
-  const hoja = workbook.addWorksheet('Resultados DISC')
+  const hoja = workbook.addWorksheet('Resultados - Desarrollo de Líderes y Equipo')
 
   const encabezados = [
     { header: 'Nombre', key: 'nombre', width: 24 },

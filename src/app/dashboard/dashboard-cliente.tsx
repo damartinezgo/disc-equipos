@@ -102,7 +102,7 @@ export default function DashboardCliente({
         {/* Encabezado */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-[#1F2937]">Resultados DISC</h1>
+            <h1 className="text-2xl font-semibold text-[#1F2937]">Resultados — Desarrollo de Líderes y Equipo</h1>
             <p className="text-sm text-gray-500">
               {filtradas.length} de {personas.length} personas
               {' · '}
