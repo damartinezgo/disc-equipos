@@ -150,6 +150,18 @@ export default function EncuestaPage() {
           </div>
         )}
 
+        <div className="mb-4 flex items-center justify-between">
+          <a
+            href="/encuesta/instrucciones"
+            className="text-xs font-medium text-[#1F4E79] underline underline-offset-2 hover:text-[#173A5C]"
+          >
+            Instrucciones
+          </a>
+          {!tieneProgresoGuardado && (
+            <span className="text-xs text-gray-400">Podés volver a leer las instrucciones cuando quieras</span>
+          )}
+        </div>
+
         {/* barra de progreso */}
         <div className="mb-8">
           <div className="mb-2 flex justify-between text-xs font-medium text-gray-500">
