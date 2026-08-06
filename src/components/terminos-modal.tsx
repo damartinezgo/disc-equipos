@@ -4,9 +4,11 @@ import { useState } from 'react'
 
 export default function TerminosModal({
   onAccept,
+  onVolver,
   yaAceptado = false,
 }: {
   onAccept: () => void
+  onVolver?: () => void
   yaAceptado?: boolean
 }) {
   const [acepta, setAcepta] = useState(false)
@@ -39,7 +41,7 @@ export default function TerminosModal({
           </div>
           <div className="mt-6 flex justify-end">
             <button
-              onClick={onAccept}
+              onClick={onVolver ?? onAccept}
               className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C]"
             >
               Volver
