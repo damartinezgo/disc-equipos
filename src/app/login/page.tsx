@@ -66,7 +66,11 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#F7F8FA] px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex justify-center">
+          <img src="/logo-rizoma.svg" alt="DISC Equipos" className="h-12 w-auto" />
+        </div>
+        <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
         <h1 className="text-2xl font-semibold text-[#1F2937]">Iniciar sesión</h1>
         <p className="mt-1 text-sm text-gray-500">Ingresa a tu cuenta para continuar.</p>
 
@@ -111,6 +115,7 @@ export default function LoginPage() {
             Regístrate
           </Link>
         </p>
+        </div>
       </div>
     </main>
   )

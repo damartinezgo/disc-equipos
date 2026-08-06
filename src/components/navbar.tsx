@@ -26,7 +26,7 @@ export default async function Navbar() {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-3 transition hover:opacity-80">
             <img
-              src="/logo.svg"
+              src="/logo-rizoma.svg"
               alt="DISC Equipos"
               className="h-8 w-auto"
             />

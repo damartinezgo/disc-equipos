@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "DISC Equipos",
   description: "Evaluación de perfil DISC para equipos de trabajo",
   icons: {
-    icon: "/logo.svg",
+    icon: "/logo-rizoma.svg",
   },
 };
 
