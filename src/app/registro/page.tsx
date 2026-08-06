@@ -30,7 +30,7 @@ export default function RegistroPage() {
       email,
       password,
       options: {
-        data: { nombre, equipo }, // lo toma el trigger handle_new_user()
+        data: { nombre, equipo },
       },
     })
     setCargando(false)
@@ -55,11 +55,10 @@ export default function RegistroPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#F7F8FA] px-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
         <div className="mb-6 flex justify-center">
-          <img src="/logo-rizoma.svg" alt="DISC Equipos" className="h-12 w-auto" />
+          <img src="/logo-rizoma.svg" alt="DISC Equipos" className="h-12 w-auto opacity-80" />
         </div>
-        <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
         <h1 className="text-2xl font-semibold text-[#1F2937]">Crear cuenta</h1>
         <p className="mt-1 text-sm text-gray-500">
           Regístrate para responder la encuesta de estilo de trabajo.
@@ -132,7 +131,6 @@ export default function RegistroPage() {
             Inicia sesión
           </Link>
         </p>
-        </div>
       </div>
     </main>
   )

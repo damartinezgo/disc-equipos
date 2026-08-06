@@ -21,6 +21,7 @@ export default function EncuestaPage() {
   const [cargandoInicial, setCargandoInicial] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [tieneProgresoGuardado, setTieneProgresoGuardado] = useState(false)
 
   // Cargar progreso existente (por si cerró el navegador a mitad de la encuesta)
   useEffect(() => {
@@ -45,6 +46,10 @@ export default function EncuestaPage() {
       if (data) {
         setRespuestasMas(data.respuestas_mas || {})
         setRespuestasMenos(data.respuestas_menos || {})
+        const respondidas = Object.keys(data.respuestas_mas || {}).length + Object.keys(data.respuestas_menos || {}).length
+        if (respondidas > 0) {
+          setTieneProgresoGuardado(true)
+        }
         // reanuda en la primera pregunta sin responder
         const primeraSinResponder = ITEMS.findIndex(
           (it) => !(data.respuestas_mas?.[it.item] && data.respuestas_menos?.[it.item])
@@ -128,6 +133,12 @@ export default function EncuestaPage() {
   return (
     <main className="min-h-screen bg-[#F7F8FA] px-4 py-10">
       <div className="mx-auto max-w-2xl">
+        {tieneProgresoGuardado && (
+          <div className="mb-6 rounded-xl bg-[#1F4E79]/10 px-4 py-3 text-sm text-[#1F4E79]">
+            Continuás desde donde lo dejaste. Tu progreso se guarda automáticamente.
+          </div>
+        )}
+
         {/* barra de progreso */}
         <div className="mb-8">
           <div className="mb-2 flex justify-between text-xs font-medium text-gray-500">
@@ -202,7 +213,7 @@ export default function EncuestaPage() {
             </button>
 
             <div className="flex items-center gap-3">
-              {guardando && <span className="text-xs text-gray-400">Guardando…</span>}
+              {guardando && <span className="text-xs text-[#1F4E79]">Guardando…</span>}
               <button
                 type="button"
                 onClick={siguiente}
