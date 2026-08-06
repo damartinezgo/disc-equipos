@@ -24,7 +24,16 @@ export default function LoginPage() {
     setCargando(false)
 
     if (signInError || !user) {
-      setError('Correo o contraseña incorrectos.')
+      const msg = signInError?.message || ''
+      if (msg.toLowerCase().includes('invalid login credentials')) {
+        setError('Correo o contraseña incorrectos.')
+      } else if (msg.toLowerCase().includes('email not confirmed')) {
+        setError('Debes confirmar tu correo antes de iniciar sesión.')
+      } else if (msg) {
+        setError(msg)
+      } else {
+        setError('Correo o contraseña incorrectos.')
+      }
       return
     }
 

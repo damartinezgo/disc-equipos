@@ -36,11 +36,16 @@ export default function RegistroPage() {
     setCargando(false)
 
     if (signUpError) {
-      setError(
-        signUpError.message === 'User already registered'
-          ? 'Ese correo ya está registrado. Intenta iniciar sesión.'
-          : 'No se pudo crear la cuenta. Intenta de nuevo.'
-      )
+      const msg = signUpError.message || ''
+      if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('user already exists')) {
+        setError('Ese correo ya está registrado. Intenta iniciar sesión.')
+      } else if (msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('password')) {
+        setError('La contraseña no cumple con los requisitos de seguridad.')
+      } else if (msg.toLowerCase().includes('network') || msg.toLowerCase().includes('fetch')) {
+        setError('Error de conexión. Verifica tu internet e intenta de nuevo.')
+      } else {
+        setError(msg || 'No se pudo crear la cuenta. Intenta de nuevo.')
+      }
       return
     }
 
