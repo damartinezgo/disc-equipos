@@ -104,7 +104,7 @@ export default function EncuestaPage() {
 
       await fetch('/api/scoring', { method: 'POST' })
 
-      router.push('/mis-resultados')
+      router.push('/encuesta/gracias')
       return
     }
 

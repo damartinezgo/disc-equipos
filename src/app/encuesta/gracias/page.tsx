@@ -7,10 +7,9 @@ export default function GraciasPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-xl font-semibold text-[#1F2937]">¡Encuesta completada!</h1>
+        <h1 className="text-xl font-semibold text-[#1F2937]">¡Muchas gracias por tu participación!</h1>
         <p className="mt-2 text-sm text-gray-500">
-          Gracias por responder. Tu jefe o el equipo de gestión revisará los resultados
-          para adaptar mejor la forma de trabajar contigo.
+          Tu respuesta ha sido registrada exitosamente.
         </p>
       </div>
     </main>
