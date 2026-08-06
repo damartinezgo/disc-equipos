@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import itemsData from '@/data/items-disc.json'
+import BienvenidaModal from '@/components/bienvenida-modal'
 
 type Opcion = { letra: string; texto: string; disc: string }
 type Item = { item: number; modulo: string; categoria: string; enunciado: string; opciones: Opcion[] }
@@ -22,6 +23,7 @@ export default function EncuestaPage() {
   const [guardando, setGuardando] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [tieneProgresoGuardado, setTieneProgresoGuardado] = useState(false)
+  const [mostrarBienvenida, setMostrarBienvenida] = useState(false)
 
   // Cargar progreso existente (por si cerró el navegador a mitad de la encuesta)
   useEffect(() => {
@@ -50,13 +52,17 @@ export default function EncuestaPage() {
         if (respondidas > 0) {
           setTieneProgresoGuardado(true)
         }
-        // reanuda en la primera pregunta sin responder
         const primeraSinResponder = ITEMS.findIndex(
           (it) => !(data.respuestas_mas?.[it.item] && data.respuestas_menos?.[it.item])
         )
         setIndice(primeraSinResponder === -1 ? 0 : primeraSinResponder)
       }
       setCargandoInicial(false)
+
+      const visto = typeof window !== 'undefined' ? localStorage.getItem('bienvenida_disc_vista') : null
+      if (!visto) {
+        setMostrarBienvenida(true)
+      }
     }
     cargar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -118,6 +124,11 @@ export default function EncuestaPage() {
 
   function anterior() {
     if (indice > 0) setIndice((i) => i - 1)
+  }
+
+  function cerrarBienvenida() {
+    localStorage.setItem('bienvenida_disc_vista', 'true')
+    setMostrarBienvenida(false)
   }
 
   if (cargandoInicial) {
@@ -226,6 +237,7 @@ export default function EncuestaPage() {
           </div>
         </div>
       </div>
+      {mostrarBienvenida && <BienvenidaModal onClose={cerrarBienvenida} />}
     </main>
   )
 }
