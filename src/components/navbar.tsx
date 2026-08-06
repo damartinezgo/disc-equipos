@@ -85,29 +85,26 @@ export default function Navbar() {
       <nav className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3 transition hover:opacity-80">
-            <img
-              src="/logo-rizoma.svg"
-              alt="Desarrollo de Líderes y Equipo"
-              className="h-10 w-auto"
-            />
-            <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
-              Desarrollo de Líderes y Equipo
-            </span>
-          </div>
-
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <button
-                type="button"
-                onClick={() => setMostrarInstrucciones(true)}
-                className="transition hover:text-[#1F4E79]"
-              >
-                Instrucciones
-              </button>
+            <div className="flex items-center gap-3 transition hover:opacity-80">
+              <img
+                src="/logo-rizoma.svg"
+                alt="Desarrollo de Líderes y Equipo"
+                className="h-10 w-auto"
+              />
+              <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
+                Desarrollo de Líderes y Equipo
+              </span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setMostrarInstrucciones(true)}
+              className="text-sm font-medium text-gray-600 transition hover:text-[#1F4E79]"
+            >
+              Instrucciones
+            </button>
             <button
               type="button"
               onClick={() => setMostrarTerminos(true)}
@@ -150,7 +147,7 @@ export default function Navbar() {
         <BienvenidaModal onClose={() => setMostrarInstrucciones(false)} />
       )}
       {mostrarTerminos && (
-        <TerminosModal onAccept={confirmarTerminos} />
+        <TerminosModal onAccept={() => setMostrarTerminos(false)} yaAceptado={aceptoTerminos} />
       )}
     </>
   )

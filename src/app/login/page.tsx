@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mostrarTerminos, setMostrarTerminos] = useState(false)
+  const [aceptoTerminos, setAceptoTerminos] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -38,11 +39,11 @@ export default function LoginPage() {
       return
     }
 
-    const aceptoTerminos = typeof window !== 'undefined'
+    const acepto = typeof window !== 'undefined'
       ? localStorage.getItem('terminos_aceptados') === 'true'
       : false
 
-    if (!aceptoTerminos) {
+    if (!acepto) {
       setMostrarTerminos(true)
       return
     }
@@ -75,6 +76,7 @@ export default function LoginPage() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('terminos_aceptados', 'true')
     }
+    setAceptoTerminos(true)
     setMostrarTerminos(false)
     router.push('/encuesta')
     router.refresh()
@@ -135,6 +137,7 @@ export default function LoginPage() {
       {mostrarTerminos && (
         <TerminosModal
           onAccept={confirmarTerminos}
+          yaAceptado={aceptoTerminos}
         />
       )}
     </main>
