@@ -6,7 +6,7 @@ export default async function Navbar() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return null // no se muestra en /login, /registro, landing sin sesión
+  if (!user) return null
 
   const { data: perfil } = await supabase
     .from('perfiles')
@@ -20,18 +20,19 @@ export default async function Navbar() {
     .eq('user_id', user.id)
     .maybeSingle()
 
-  const { data: respuesta } = await supabase
-    .from('respuestas')
-    .select('completado')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
   return (
     <nav className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-6">
-          <Link href="/" className="text-sm font-semibold text-[#1F4E79]">
-            DISC Equipos
+          <Link href="/" className="flex items-center gap-3 transition hover:opacity-80">
+            <img
+              src="/logo.svg"
+              alt="DISC Equipos"
+              className="h-8 w-auto"
+            />
+            <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
+              DISC Equipos
+            </span>
           </Link>
 
           {esEncuestador ? (
@@ -45,15 +46,9 @@ export default async function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-4 text-sm text-gray-600">
-              {!respuesta?.completado ? (
-                <Link href="/encuesta" className="transition hover:text-[#1F4E79]">
-                  Mi encuesta
-                </Link>
-              ) : (
-                <Link href="/mis-resultados" className="transition hover:text-[#1F4E79]">
-                  Mis resultados
-                </Link>
-              )}
+              <Link href="/encuesta" className="transition hover:text-[#1F4E79]">
+                Mi encuesta
+              </Link>
             </div>
           )}
         </div>

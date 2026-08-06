@@ -39,7 +39,7 @@ export default function EncuestaPage() {
         .maybeSingle()
 
       if (data?.completado) {
-        router.push('/mis-resultados')
+        router.push('/encuesta/gracias')
         return
       }
       if (data) {

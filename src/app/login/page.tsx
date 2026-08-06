@@ -58,14 +58,9 @@ export default function LoginPage() {
       return
     }
 
-    // Participante normal: ver si ya completó la encuesta
-    const { data: respuesta } = await supabase
-      .from('respuestas')
-      .select('completado')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    router.push(respuesta?.completado ? '/mis-resultados' : '/encuesta')
+    // Participante normal: siempre va a /encuesta
+    // (si ya la completó, /encuesta lo redirige a /encuesta/gracias)
+    router.push('/encuesta')
     router.refresh()
   }
 
