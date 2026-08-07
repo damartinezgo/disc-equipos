@@ -1,19 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import TerminosModal from '@/components/terminos-modal'
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const supabase = createClient()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mostrarTerminos, setMostrarTerminos] = useState(false)
+  const [aceptoTerminos, setAceptoTerminos] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -37,9 +39,19 @@ export default function LoginPage() {
       return
     }
 
-    const siguiente = searchParams.get('siguiente')
-    if (siguiente) {
-      router.push(siguiente)
+    const acepto = typeof window !== 'undefined'
+      ? localStorage.getItem('terminos_aceptados') === 'true'
+      : false
+
+    if (!acepto) {
+      setMostrarTerminos(true)
+      return
+    }
+
+    const redirect = typeof window !== 'undefined' ? sessionStorage.getItem('redirect_after_login') : null
+    if (redirect) {
+      sessionStorage.removeItem('redirect_after_login')
+      router.push(redirect)
       router.refresh()
       return
     }
@@ -60,11 +72,21 @@ export default function LoginPage() {
     router.refresh()
   }
 
+  function confirmarTerminos() {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('terminos_aceptados', 'true')
+    }
+    setAceptoTerminos(true)
+    setMostrarTerminos(false)
+    router.push('/encuesta')
+    router.refresh()
+  }
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F7F8FA] px-4">
+    <main suppressHydrationWarning className="flex min-h-screen items-center justify-center bg-[#F7F8FA] px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
         <div className="mb-6 flex justify-center">
-          <img src="/logo-rizoma.svg" alt="DISC Equipos" className="h-12 w-auto opacity-80" />
+          <img src="/logo-rizoma.svg" alt="Desarrollo de Líderes y Equipo" className="h-12 w-auto opacity-80" />
         </div>
         <h1 className="text-2xl font-semibold text-[#1F2937]">Iniciar sesión</h1>
         <p className="mt-1 text-sm text-gray-500">Ingresa a tu cuenta para continuar.</p>
@@ -77,7 +99,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
             />
           </div>
           <div>
@@ -87,7 +109,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
             />
           </div>
 
@@ -111,6 +133,13 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+
+      {mostrarTerminos && (
+        <TerminosModal
+          onAccept={confirmarTerminos}
+          yaAceptado={aceptoTerminos}
+        />
+      )}
     </main>
   )
 }

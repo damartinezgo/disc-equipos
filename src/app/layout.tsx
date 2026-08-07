@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/navbar";
 
 const geistSans = Geist({
@@ -14,18 +15,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DISC Equipos",
-  description: "Evaluación de perfil DISC para equipos de trabajo",
+  title: "Desarrollo de Líderes y Equipo",
+  description: "Evaluación de Desarrollo de Líderes y Equipo",
   icons: {
     icon: "/logo-rizoma.svg",
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let nombre: string | null = null
+  if (user) {
+    const { data: perfilData } = await supabase
+      .from('perfiles')
+      .select('nombre')
+      .eq('id', user.id)
+      .maybeSingle()
+    nombre = perfilData?.nombre ?? null
+  }
+
   return (
     <html
       lang="es"
@@ -33,7 +47,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
-        <Navbar />
+        {user && <Navbar user={user} nombre={nombre} />}
         {children}
       </body>
     </html>

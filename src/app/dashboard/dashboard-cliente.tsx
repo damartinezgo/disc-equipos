@@ -21,7 +21,7 @@ const NOMBRE_ESTILO: Record<string, string> = {
 type Persona = {
   user_id: string
   completado: boolean
-  perfiles: { nombre: string; equipo: string; created_at: string }[]
+  perfiles: { nombre: string; lugar: string; equipo: string; created_at: string }[]
   // Scoring — null si aún no completó
   d_global: number | null
   i_global: number | null
@@ -102,7 +102,7 @@ export default function DashboardCliente({
         {/* Encabezado */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-[#1F2937]">Resultados DISC</h1>
+            <h1 className="text-2xl font-semibold text-[#1F2937]">Resultados — Desarrollo de Líderes y Equipo</h1>
             <p className="text-sm text-gray-500">
               {filtradas.length} de {personas.length} personas
               {' · '}
@@ -171,6 +171,7 @@ export default function DashboardCliente({
             <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
               <tr>
                 <th className="px-5 py-3">Nombre</th>
+                <th className="px-5 py-3">Lugar</th>
                 <th className="px-5 py-3">Equipo</th>
                 <th className="px-5 py-3">Estado</th>
                 <th className="px-5 py-3">Perfil</th>
@@ -186,6 +187,9 @@ export default function DashboardCliente({
                 <tr key={p.user_id} className="hover:bg-gray-50">
                   <td className="px-5 py-3 font-medium text-gray-800">
                     {p.perfiles?.[0]?.nombre}
+                  </td>
+                  <td className="px-5 py-3 text-gray-500">
+                    {p.perfiles?.[0]?.lugar || <span className="text-gray-300">—</span>}
                   </td>
                   <td className="px-5 py-3 text-gray-500">
                     {p.perfiles?.[0]?.equipo}
@@ -243,7 +247,7 @@ export default function DashboardCliente({
               ))}
               {filtradas.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-5 py-10 text-center text-gray-400">
+                  <td colSpan={10} className="px-5 py-10 text-center text-gray-400">
                     Nadie coincide con este filtro todavía.
                   </td>
                 </tr>

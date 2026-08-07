@@ -33,14 +33,14 @@ export default async function DetallePersonaPage({
 
   const { data: perfil } = await adminSupabase
     .from('perfiles')
-    .select('nombre, equipo')
+    .select('nombre, lugar, equipo')
     .eq('id', userId)
     .maybeSingle()
 
   // Adjuntar perfiles para mantener la interfaz compatible
   const scoringConPerfil = {
     ...scoring,
-    perfiles: [{ nombre: perfil?.nombre ?? 'Sin nombre', equipo: perfil?.equipo ?? '' }],
+    perfiles: [{ nombre: perfil?.nombre ?? 'Sin nombre', lugar: perfil?.lugar ?? '', equipo: perfil?.equipo ?? '' }],
   }
 
   const { data: rubrica } = await supabase
@@ -58,8 +58,9 @@ export default async function DetallePersonaPage({
     <main className="min-h-screen bg-[#F7F8FA] px-4 py-8">
       <div className="mx-auto max-w-4xl">
         <PerfilDetalle
-          nombre={scoringConPerfil.perfiles[0].nombre}
-          equipo={scoringConPerfil.perfiles[0].equipo}
+           nombre={scoringConPerfil.perfiles[0].nombre}
+           lugar={scoringConPerfil.perfiles[0].lugar}
+           equipo={scoringConPerfil.perfiles[0].equipo}
           scoring={scoring}
           rubrica={rubrica ?? []}
           textoPerfil={textoPerfil ?? null}

@@ -28,7 +28,10 @@ export default function EncuestaPage() {
     async function cargar() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        router.push('/login?siguiente=/encuesta')
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('redirect_after_login', '/encuesta')
+        }
+        router.push('/login')
         return
       }
       setUserId(user.id)
@@ -50,7 +53,6 @@ export default function EncuestaPage() {
         if (respondidas > 0) {
           setTieneProgresoGuardado(true)
         }
-        // reanuda en la primera pregunta sin responder
         const primeraSinResponder = ITEMS.findIndex(
           (it) => !(data.respuestas_mas?.[it.item] && data.respuestas_menos?.[it.item])
         )
@@ -122,8 +124,8 @@ export default function EncuestaPage() {
 
   if (cargandoInicial) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-gray-400">
-        Cargando…
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <img src="/pantalla-carga.png" alt="Cargando…" className="h-auto max-h-screen w-auto" />
       </div>
     )
   }
@@ -202,7 +204,7 @@ export default function EncuestaPage() {
             </p>
           )}
 
-          <div className="mt-8 flex items-center justify-between">
+          <div className="mt-8 flex justify-end gap-3">
             <button
               type="button"
               onClick={anterior}
@@ -211,18 +213,15 @@ export default function EncuestaPage() {
             >
               ← Anterior
             </button>
-
-            <div className="flex items-center gap-3">
-              {guardando && <span className="text-xs text-[#1F4E79]">Guardando…</span>}
-              <button
-                type="button"
-                onClick={siguiente}
-                disabled={!puedeAvanzar}
-                className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:bg-gray-300"
-              >
-                {indice === TOTAL - 1 ? 'Finalizar' : 'Siguiente →'}
-              </button>
-            </div>
+            {guardando && <span className="text-xs text-[#1F4E79]">Guardando…</span>}
+            <button
+              type="button"
+              onClick={siguiente}
+              disabled={!puedeAvanzar}
+              className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:bg-gray-300"
+            >
+              {indice === TOTAL - 1 ? 'Finalizar' : 'Siguiente →'}
+            </button>
           </div>
         </div>
       </div>

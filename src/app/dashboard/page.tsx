@@ -6,7 +6,12 @@ export default async function DashboardPage() {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login?siguiente=/dashboard')
+  if (!user) {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('redirect_after_login', '/dashboard')
+    }
+    redirect('/login')
+  }
 
   // Verifica que sea encuestador
   const { data: esEncuestador } = await supabase
@@ -23,7 +28,7 @@ export default async function DashboardPage() {
   // 1. Todos los perfiles registrados (base de la tabla)
   const { data: perfilesData } = await admin
     .from('perfiles')
-    .select('id, nombre, equipo, created_at')
+    .select('id, nombre, lugar, equipo, created_at')
 
   // 2. Estado de completado por usuario
   const { data: respuestasData } = await admin
@@ -58,7 +63,7 @@ export default async function DashboardPage() {
     const completado = respuestasMap.get(p.id) ?? false
     return {
       user_id: p.id,
-      perfiles: [{ nombre: p.nombre, equipo: p.equipo, created_at: p.created_at }],
+      perfiles: [{ nombre: p.nombre, lugar: p.lugar ?? '', equipo: p.equipo, created_at: p.created_at }],
       completado,
       // Scoring (null si no completó)
       d_global: scoring?.d_global ?? null,
@@ -95,7 +100,7 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-[#F7F8FA] px-4 py-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-6 rounded-xl bg-[#1F4E79]/10 px-4 py-3 text-sm text-[#1F4E79]">
-          Bienvenido al panel de gestión DISC. Aquí podés visualizar los resultados de tu equipo.
+          Bienvenido al panel de Desarrollo de Líderes y Equipo. Aquí podés visualizar los resultados de tu equipo.
         </div>
       <DashboardCliente personas={personas} equipos={equiposUnicos} />
     </div>
