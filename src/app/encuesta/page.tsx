@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import itemsData from '@/data/items-disc.json'
-import BienvenidaModal from '@/components/bienvenida-modal'
 
 type Opcion = { letra: string; texto: string; disc: string }
 type Item = { item: number; modulo: string; categoria: string; enunciado: string; opciones: Opcion[] }
@@ -23,7 +22,6 @@ export default function EncuestaPage() {
   const [guardando, setGuardando] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [tieneProgresoGuardado, setTieneProgresoGuardado] = useState(false)
-  const [mostrarBienvenida, setMostrarBienvenida] = useState(false)
 
   // Cargar progreso existente (por si cerró el navegador a mitad de la encuesta)
   useEffect(() => {
@@ -61,11 +59,6 @@ export default function EncuestaPage() {
         setIndice(primeraSinResponder === -1 ? 0 : primeraSinResponder)
       }
       setCargandoInicial(false)
-
-      const visto = typeof window !== 'undefined' ? localStorage.getItem('bienvenida_disc_vista') : null
-      if (!visto) {
-        setMostrarBienvenida(true)
-      }
     }
     cargar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -129,15 +122,10 @@ export default function EncuestaPage() {
     if (indice > 0) setIndice((i) => i - 1)
   }
 
-  function cerrarBienvenida() {
-    localStorage.setItem('bienvenida_disc_vista', 'true')
-    setMostrarBienvenida(false)
-  }
-
   if (cargandoInicial) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-gray-400">
-        Cargando…
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <img src="/pantalla-carga.png" alt="Cargando…" className="h-auto max-h-screen w-auto" />
       </div>
     )
   }
@@ -216,38 +204,27 @@ export default function EncuestaPage() {
             </p>
           )}
 
-          <div className="mt-8 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setMostrarBienvenida(true)}
-                className="text-sm font-medium text-[#1F4E79] underline underline-offset-2 hover:text-[#173A5C]"
-              >
-                Instrucciones
-              </button>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={anterior}
-                disabled={indice === 0}
-                className="text-sm font-medium text-gray-500 disabled:opacity-0"
-              >
-                ← Anterior
-              </button>
-              {guardando && <span className="text-xs text-[#1F4E79]">Guardando…</span>}
-              <button
-                type="button"
-                onClick={siguiente}
-                disabled={!puedeAvanzar}
-                className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:bg-gray-300"
-              >
-                {indice === TOTAL - 1 ? 'Finalizar' : 'Siguiente →'}
-              </button>
-            </div>
+          <div className="mt-8 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={anterior}
+              disabled={indice === 0}
+              className="text-sm font-medium text-gray-500 disabled:opacity-0"
+            >
+              ← Anterior
+            </button>
+            {guardando && <span className="text-xs text-[#1F4E79]">Guardando…</span>}
+            <button
+              type="button"
+              onClick={siguiente}
+              disabled={!puedeAvanzar}
+              className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:bg-gray-300"
+            >
+              {indice === TOTAL - 1 ? 'Finalizar' : 'Siguiente →'}
+            </button>
           </div>
         </div>
       </div>
-      {mostrarBienvenida && <BienvenidaModal onClose={cerrarBienvenida} />}
     </main>
   )
 }

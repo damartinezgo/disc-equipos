@@ -28,7 +28,7 @@ export default async function DashboardPage() {
   // 1. Todos los perfiles registrados (base de la tabla)
   const { data: perfilesData } = await admin
     .from('perfiles')
-    .select('id, nombre, equipo, created_at')
+    .select('id, nombre, lugar, equipo, created_at')
 
   // 2. Estado de completado por usuario
   const { data: respuestasData } = await admin
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
     const completado = respuestasMap.get(p.id) ?? false
     return {
       user_id: p.id,
-      perfiles: [{ nombre: p.nombre, equipo: p.equipo, created_at: p.created_at }],
+      perfiles: [{ nombre: p.nombre, lugar: p.lugar ?? '', equipo: p.equipo, created_at: p.created_at }],
       completado,
       // Scoring (null si no completó)
       d_global: scoring?.d_global ?? null,

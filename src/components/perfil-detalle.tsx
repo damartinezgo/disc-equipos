@@ -14,12 +14,14 @@ type TextoPerfil = Record<string, any> | null
 
 export default function PerfilDetalle({
   nombre,
+  lugar,
   equipo,
   scoring,
   rubrica,
   textoPerfil,
 }: {
   nombre: string
+  lugar: string
   equipo: string
   scoring: Scoring
   rubrica: Rubrica[]
@@ -29,6 +31,7 @@ export default function PerfilDetalle({
     <>
       <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
         <h1 className="text-2xl font-semibold text-[#1F2937]">{nombre}</h1>
+        <p className="text-sm text-gray-500">{lugar}</p>
         <p className="text-sm text-gray-500">{equipo}</p>
 
         {textoPerfil && (

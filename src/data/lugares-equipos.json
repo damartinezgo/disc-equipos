@@ -1,0 +1,582 @@
+{
+  "lugares": [
+    {
+      "id": 1,
+      "nombre": "Bogota"
+    },
+    {
+      "id": 2,
+      "nombre": "Territorios"
+    }
+  ],
+  "equipos": [
+    {
+      "nombre": "DESPACHO PROCURADOR GENERAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION AMAGA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DESPACHO VICEPROCURADOR GENERAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION ANDES",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIRECCION DE APOYO ESTRATEGICO, ANALISIS DE DATOS E INFORMACION",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION ARMENIA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIRECCION NACIONAL DE INVESTIGACIONES ESPECIALES",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION BUCARAMANGA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION ADMINISTRATIVA - SECRETARIA GENERAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION BUENAVENTURA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION ADMINISTRATIVA Y FINANCIERA - IEMP",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION CALI",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION DE CAPACITACION - IEMP",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION CARMEN DE BOLIVAR",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION DE DOCUMENTACION - DESPACHO VICEPROCURADOR GENERAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION CARTAGENA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION DE GESTION HUMANA - SECRETARIA GENERAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION CARTAGO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION DE INVESTIGACIONES SOCIOPOLITICAS Y ASUNTOS SOCIOECONOMICOS - IEMP",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION CHAPARRAL",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION DE REGISTRO DE SANCIONES Y CAUSAS DE INHABILIDAD - DESPACHO VICEPROCURADOR GENERAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION CUCUTA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION DE RELACIONAMIENTO CON EL CIUDADANO - DESPACHO VICEPROCURADOR GENERAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION EL BANCO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION DE SEGURIDAD - DESPACHO VICEPROCURADOR GENERAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION FACATATIVA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "DIVISION FINANCIERA - SECRETARIA GENERAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION GARZON",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "INSTITUTO DE ESTUDIOS MINISTERIO PUBLICO",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION GIRARDOT",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "OFICINA DE CONTROL INTERNO",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION GUATEQUE",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "OFICINA DE PLANEACION",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION HONDA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "OFICINA DE PRENSA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION IPIALES",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "OFICINA DE TECNOLOGIA, INNOVACION Y TRANSFORMACION DIGITAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION MAGANGUE",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "OFICINA JURIDICA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION MANIZALES",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA AUXILIAR ASUNTOS CONSTITUCIONALES",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION OCANA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA AUXILIAR ASUNTOS DISCIPLINARIOS",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION POPAYAN",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 1: PARA LA DEFENSA DE LOS DERECHOS HUMANOS",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION SANTA ROSA DE VITERBO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 10: PARA LA MORALIDAD Y TRANSPARENCIA PUBLICA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION SANTAFE DE ANTIOQUIA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 12: PRIMERA CON FUNCIONES DE INTERVENCION PARA LA JURISDICCION ESPECIAL PARA LA PAZ",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION SANTANDER DE QUILICHAO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 14:TERCERA CON FUNCIONES DE INTERVENCION PARA LA JURISDICCION ESPECIAL PARA LA PAZ",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION SINCELEJO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 15: PARA  ASUNTOS ELECTORALES Y PARTICIPACION DEMOCRATICA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION SOGAMOSO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 2: PARA LA RESTITUCION DE TIERRAS",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION TUNJA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 3: PARA ASUNTOS AMBIENTALES MINERO ENERGETICOS Y AGRARIOS",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION VALLE DEL ABURRA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 4: PARA ASUNTOS CIVILES",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION VALLEDUPAR",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 5: PARA EL MINISTERIO PUBLICO EN ASUNTOS PENALES",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION VELEZ",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 6: PARA LA CONCILIACION ADMINISTRATIVA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION VILLAVICENCIO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 7: ASUNTOS DEL TRABAJO Y SEGURIDAD SOCIAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION YARUMAL",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA CON FUNCIONES MIXTAS 9: PARA EL SEGUIMIENTO A LOS RECURSOS DEL SISTEMA GENERAL DE REGALIAS",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE INSTRUCCION ZIPAQUIRA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DE INTERVENCION 1: PRIMERA PARA LA CASACION PENAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO BARRANQUILLA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DE INTERVENCION 10: QUINTA ANTE EL CONSEJO DE ESTADO",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO BUCARAMANGA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DE INTERVENCION 3: PRIMERA PARA LA INVESTIGACION Y JUZGAMIENTO PENAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO CALI",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DE INTERVENCION 5: TERCERA PARA LA INVESTIGACION Y JUZGAMIENTO PENAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO CARTAGENA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DE INTERVENCION 6: PRIMERA ANTE EL CONSEJO DE ESTADO",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO IBAGUE",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DE INTERVENCION 7: SEGUNDA ANTE EL CONSEJO DE ESTADO",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO MONTERIA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DE INTERVENCION 8: TERCERA ANTE EL CONSEJO DE ESTADO",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO NEIVA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DE INTERVENCION 9: CUARTA ANTE EL CONSEJO DE ESTADO",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO OCANA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DISCIPLINARIA DE INSTRUCCION 1: PRIMERA PARA VIGILANCIA ADMINISTRATIVA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO PASTO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DISCIPLINARIA DE INSTRUCCION 10: PARA LA FUERZA PUBLICA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO RIONEGRO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DISCIPLINARIA DE INSTRUCCION 2: SEGUNDA PARA VIGILANCIA ADMINISTRATIVA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO SAN GIL",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DISCIPLINARIA DE INSTRUCCION 3: TERCERA PARA VIGILANCIA ADMINISTRATIVA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA PROVINCIAL DE JUZGAMIENTO VALLE DEL ABURRA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DISCIPLINARIA DE INSTRUCCION 7: SEGUNDA PARA LA CONTRATACION ESTATAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION ANTIOQUIA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DISCIPLINARIA DE INSTRUCCION 9: CUARTA PARA LA CONTRATACION ESTATAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION ARAUCA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA DISCIPLINARIA DE JUZGAMIENTO 4",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION BOLIVAR",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA FUNCIONES MIXTAS 8: PARA LA  DEFENSA DE LOS DERECHOS DE LA INFANCIA, LA  ADOLESCENCIA, LA FAMILIA Y LA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION CALDAS",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA PREVENTIVA Y DE CONTROL DE GESTION 1: PRIMERA PARA LA VIGILANCIA PREVENTIVA DE LA FUNCION PUBLICA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION CASANARE",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA PREVENTIVA Y DE CONTROL DE GESTION 2: SEGUNDA PARA LA VIGILANCIA PREVENTIVA DE LA FUNCION PUBLICA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION CHOCO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA PREVENTIVA Y DE CONTROL DE GESTION 3: PARA LA GESTION Y LA GOBERNANZA TERRITORIAL",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION CORDOBA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA PREVENTIVA Y DE CONTROL DE GESTION 4: PARA ASUNTOS ETNICOS",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION GUAINIA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DELEGADA PREVENTIVA Y DE CONTROL DE GESTION 5: PARA EL SEGUIMIENTO DEL ACUERDO DE PAZ",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION GUAVIARE",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA DISTRITAL DE JUZGAMIENTO",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION HUILA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA PRIMERA DISTRITAL DE INSTRUCCION",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION LA GUAJIRA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION CUNDINAMARCA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION META",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO CUNDINAMARCA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION PUTUMAYO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "SALA DISCIPLINARIA DE INSTRUCCION",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION QUINDIO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "SALA DISCIPLINARIA DE JUZGAMIENTO DE SERVIDORES PUBLICOS DE ELECCION POPULAR",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION RISARALDA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "SALA DISCIPLINARIA ORDINARIA DE JUZGAMIENTO",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION SAN ANDRES",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "VEEDURIA",
+      "lugar_id": 1
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION SANTANDER",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION SUCRE",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION TOLIMA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION VALLE",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL DE INSTRUCCION VAUPES",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO ANTIOQUIA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO ATLANTICO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO GUAVIARE",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO MAGDALENA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO META",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO NORTE DE SANTANDER",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO PUTUMAYO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO QUINDIO",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO RISARALDA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO SANTANDER",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO TOLIMA",
+      "lugar_id": 2
+    },
+    {
+      "nombre": "PROCURADURIA REGIONAL JUZGAMIENTO VALLE",
+      "lugar_id": 2
+    }
+  ]
+}

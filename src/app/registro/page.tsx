@@ -1,24 +1,80 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useId } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Select from 'react-select'
 import { createClient } from '@/lib/supabase/client'
+import TerminosModal from '@/components/terminos-modal'
+
+type Lugar = { id: number; nombre: string }
+type Equipo = { id: number; nombre: string }
 
 export default function RegistroPage() {
   const router = useRouter()
   const supabase = createClient()
 
   const [nombre, setNombre] = useState('')
+  const [lugarId, setLugarId] = useState('')
   const [equipo, setEquipo] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [lugares, setLugares] = useState<Lugar[]>([])
+  const [equipos, setEquipos] = useState<Equipo[]>([])
+  const [cargandoEquipos, setCargandoEquipos] = useState(false)
+  const [mostrarTerminos, setMostrarTerminos] = useState(false)
+  const [aceptoTerminos, setAceptoTerminos] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('terminos_aceptados') === 'true'
+    }
+    return false
+  })
+
+  const lugarSelectId = useId()
+  const equipoSelectId = useId()
+
+  useEffect(() => {
+    async function cargarLugares() {
+      const res = await fetch('/api/lugares')
+      const data = await res.json()
+      setLugares(Array.isArray(data) ? data : [])
+    }
+    cargarLugares()
+  }, [])
+
+  useEffect(() => {
+    async function cargarEquipos() {
+      if (!lugarId) {
+        setEquipos([])
+        return
+      }
+      setCargandoEquipos(true)
+      try {
+        const res = await fetch(`/api/equipos?lugar_id=${lugarId}`)
+        const data = await res.json()
+        setEquipos(Array.isArray(data) ? data : [])
+      } catch {
+        // error silencioso
+      } finally {
+        setCargandoEquipos(false)
+      }
+      setEquipo('')
+    }
+    cargarEquipos()
+  }, [lugarId])
+
+  const lugarNombre = lugares.find((l) => String(l.id) === lugarId)?.nombre ?? ''
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+
+    if (!lugarId || !equipo) {
+      setError('Selecciona un lugar y una dependencia.')
+      return
+    }
 
     if (password.length < 8) {
       setError('La contraseña debe tener al menos 8 caracteres.')
@@ -30,7 +86,7 @@ export default function RegistroPage() {
       email,
       password,
       options: {
-        data: { nombre, equipo },
+        data: { nombre, lugar: lugarNombre, equipo: equipo },
       },
     })
     setCargando(false)
@@ -49,8 +105,25 @@ export default function RegistroPage() {
       return
     }
 
-    router.push('/encuesta')
-    router.refresh()
+    const acepto = typeof window !== 'undefined'
+      ? localStorage.getItem('terminos_aceptados') === 'true'
+      : false
+
+    if (!acepto) {
+      setMostrarTerminos(true)
+      return
+    }
+
+    router.push('/carga')
+  }
+
+  function confirmarTerminos() {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('terminos_aceptados', 'true')
+    }
+    setAceptoTerminos(true)
+    setMostrarTerminos(false)
+    router.push('/carga')
   }
 
   return (
@@ -77,13 +150,78 @@ export default function RegistroPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Equipo / área</label>
-            <input
+            <label className="block text-sm font-medium text-gray-700">Lugar</label>
+            <Select
               required
-              value={equipo}
-              onChange={(e) => setEquipo(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
-              placeholder="Ej. Equipo Comercial"
+              instanceId={lugarSelectId}
+              value={lugarId ? { value: lugarId, label: lugares.find((l) => String(l.id) === lugarId)?.nombre ?? '' } : null}
+              onChange={(opt) => {
+                setLugarId(opt ? opt.value : '')
+                setEquipo('')
+              }}
+              options={lugares.map((l) => ({ value: String(l.id), label: l.nombre }))}
+              placeholder="Selecciona un lugar"
+              classNames={{
+                control: () => 'border-gray-300 text-black',
+                menu: () => 'z-50',
+                option: ({ isFocused }) => isFocused ? 'bg-[#1F4E79]/10 cursor-pointer' : 'cursor-pointer',
+              }}
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: '42px',
+                  borderColor: '#d1d5db',
+                  borderRadius: '0.5rem',
+                  backgroundColor: 'white',
+                  '&:hover': { borderColor: '#9ca3af' },
+                }),
+                menu: (base) => ({ ...base, zIndex: 50 }),
+                option: (base, { isFocused }) => ({
+                  ...base,
+                  color: '#111827',
+                  backgroundColor: isFocused ? '#1F4E79]/10' : undefined,
+                  cursor: 'pointer',
+                }),
+                singleValue: (base) => ({ ...base, color: '#111827' }),
+                placeholder: (base) => ({ ...base, color: '#6b7280' }),
+              }}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Dependencia</label>
+            <Select
+              required
+              instanceId={equipoSelectId}
+              isDisabled={!lugarId || cargandoEquipos}
+              value={equipo ? { value: equipo, label: equipo } : null}
+              onChange={(opt) => setEquipo(opt ? opt.value : '')}
+              options={equipos.map((e) => ({ value: e.nombre, label: e.nombre }))}
+              placeholder={cargandoEquipos ? 'Cargando...' : !lugarId ? 'Selecciona un lugar' : 'Selecciona o escribe una dependencia'}
+              classNames={{
+                control: () => 'border-gray-300 text-black',
+                menu: () => 'z-50',
+                option: ({ isFocused }) => isFocused ? 'bg-[#1F4E79]/10 cursor-pointer' : 'cursor-pointer',
+              }}
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: '42px',
+                  borderColor: '#d1d5db',
+                  borderRadius: '0.5rem',
+                  backgroundColor: 'white',
+                  '&:hover': { borderColor: '#9ca3af' },
+                }),
+                menu: (base) => ({ ...base, zIndex: 50 }),
+                option: (base, { isFocused }) => ({
+                  ...base,
+                  color: '#111827',
+                  backgroundColor: isFocused ? '#1F4E79]/10' : undefined,
+                  cursor: 'pointer',
+                }),
+                singleValue: (base) => ({ ...base, color: '#111827' }),
+                placeholder: (base) => ({ ...base, color: '#6b7280' }),
+              }}
             />
           </div>
 
@@ -118,8 +256,8 @@ export default function RegistroPage() {
 
           <button
             type="submit"
-            disabled={cargando}
-            className="w-full rounded-lg bg-[#1F4E79] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:opacity-50"
+            disabled={cargando || !lugarId || !equipo}
+            className="w-full rounded-lg bg-[#1F4E79] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cargando ? 'Creando cuenta…' : 'Crear cuenta y comenzar'}
           </button>
@@ -132,6 +270,13 @@ export default function RegistroPage() {
           </Link>
         </p>
       </div>
+
+      {mostrarTerminos && (
+        <TerminosModal
+          onAccept={confirmarTerminos}
+          yaAceptado={aceptoTerminos}
+        />
+      )}
     </main>
   )
 }
