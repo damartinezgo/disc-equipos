@@ -21,16 +21,16 @@ export default function RegistroPage() {
   const [password, setPassword] = useState('')
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [lugares, setLugares] = useState<Lugar[]>([])
-  const [equipos, setEquipos] = useState<Equipo[]>([])
-  const [cargandoEquipos, setCargandoEquipos] = useState(false)
-  const [mostrarTerminos, setMostrarTerminos] = useState(false)
-  const [aceptoTerminos, setAceptoTerminos] = useState(() => {
+  const [acepto, setAcepto] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('terminos_aceptados') === 'true'
     }
     return false
   })
+  const [mostrarTerminos, setMostrarTerminos] = useState(false)
+  const [lugares, setLugares] = useState<Lugar[]>([])
+  const [equipos, setEquipos] = useState<Equipo[]>([])
+  const [cargandoEquipos, setCargandoEquipos] = useState(false)
 
   const lugarSelectId = useId()
   const equipoSelectId = useId()
@@ -76,6 +76,11 @@ export default function RegistroPage() {
       return
     }
 
+    if (!acepto) {
+      setError('Debes aceptar los términos y condiciones.')
+      return
+    }
+
     if (password.length < 8) {
       setError('La contraseña debe tener al menos 8 caracteres.')
       return
@@ -105,15 +110,6 @@ export default function RegistroPage() {
       return
     }
 
-    const acepto = typeof window !== 'undefined'
-      ? localStorage.getItem('terminos_aceptados') === 'true'
-      : false
-
-    if (!acepto) {
-      setMostrarTerminos(true)
-      return
-    }
-
     router.push('/carga')
   }
 
@@ -121,9 +117,8 @@ export default function RegistroPage() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('terminos_aceptados', 'true')
     }
-    setAceptoTerminos(true)
+    setAcepto(true)
     setMostrarTerminos(false)
-    router.push('/carga')
   }
 
   return (
@@ -250,13 +245,38 @@ export default function RegistroPage() {
             />
           </div>
 
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={acepto}
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('terminos_aceptados', String(checked))
+                  }
+                  setAcepto(checked)
+                }}
+                className="h-4 w-4 rounded border-gray-300 text-[#1F4E79] focus:ring-[#1F4E79]"
+              />
+              Acepto los
+            </label>
+            <button
+              type="button"
+              onClick={() => setMostrarTerminos(true)}
+              className="text-sm font-medium text-[#1F4E79] underline underline-offset-2 hover:text-[#173A5C]"
+            >
+              Términos y condiciones
+            </button>
+          </div>
+
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
           )}
 
           <button
             type="submit"
-            disabled={cargando || !lugarId || !equipo}
+            disabled={cargando || !lugarId || !equipo || !acepto}
             className="w-full rounded-lg bg-[#1F4E79] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cargando ? 'Creando cuenta…' : 'Crear cuenta y comenzar'}
@@ -274,7 +294,7 @@ export default function RegistroPage() {
       {mostrarTerminos && (
         <TerminosModal
           onAccept={confirmarTerminos}
-          yaAceptado={aceptoTerminos}
+          yaAceptado={acepto}
         />
       )}
     </main>
