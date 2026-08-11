@@ -1,4 +1,5 @@
 import { redirect, notFound } from 'next/navigation'
+import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import PerfilDetalle from '@/components/perfil-detalle'
 
@@ -33,14 +34,17 @@ export default async function DetallePersonaPage({
 
   const { data: perfil } = await adminSupabase
     .from('perfiles')
-    .select('nombre, lugar, equipo')
+    .select('nombre, equipo')
     .eq('id', userId)
     .maybeSingle()
+
+  const { data: authRes } = await adminSupabase.auth.admin.getUserById(userId)
+  const lugar = authRes?.user?.user_metadata?.lugar ?? ''
 
   // Adjuntar perfiles para mantener la interfaz compatible
   const scoringConPerfil = {
     ...scoring,
-    perfiles: [{ nombre: perfil?.nombre ?? 'Sin nombre', lugar: perfil?.lugar ?? '', equipo: perfil?.equipo ?? '' }],
+    perfiles: [{ nombre: perfil?.nombre ?? 'Sin nombre', lugar, equipo: perfil?.equipo ?? '' }],
   }
 
   const { data: rubrica } = await supabase
@@ -55,8 +59,14 @@ export default async function DetallePersonaPage({
     .maybeSingle()
 
   return (
-    <main className="min-h-screen bg-[#F7F8FA] px-4 py-8">
-      <div className="mx-auto max-w-4xl">
+    <main className="relative min-h-screen bg-[#F7F8FA] px-4 py-8">
+      <Link
+        href="/dashboard"
+        className="absolute top-6 left-6 flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800"
+      >
+        ← Volver al dashboard
+      </Link>
+      <div className="mx-auto max-w-4xl pt-10">
         <PerfilDetalle
            nombre={scoringConPerfil.perfiles[0].nombre}
            lugar={scoringConPerfil.perfiles[0].lugar}

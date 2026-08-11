@@ -25,20 +25,11 @@ export default async function DashboardPage() {
   // Service role para leer datos de todos los usuarios sin restricción de RLS
   const admin = createServiceClient()
 
-  // 1. Todos los perfiles registrados (base de la tabla)
-  const { data: perfilesData } = await admin
-    .from('perfiles')
-    .select('id, nombre, lugar, equipo, created_at')
-
-  // 2. Estado de completado por usuario
-  const { data: respuestasData } = await admin
-    .from('respuestas')
-    .select('user_id, completado')
-
-  // 3. Scoring (solo existe para quien completó)
-  const { data: scoringData } = await admin
-    .from('scoring')
-    .select(`
+  // Queries paralelas para reducir LCP
+  const [perfilesRes, respuestasRes, scoringRes, authRes] = await Promise.all([
+    admin.from('perfiles').select('id, nombre, equipo, created_at'),
+    admin.from('respuestas').select('user_id, completado'),
+    admin.from('scoring').select(`
       user_id,
       d_global, i_global, s_global, c_global,
       estilo_principal, estilo_secundario, perfil_combinado,
@@ -47,7 +38,19 @@ export default async function DashboardPage() {
       gestion_jefe_d, gestion_jefe_i, gestion_jefe_s, gestion_jefe_c,
       dinamica_equipo_d, dinamica_equipo_i, dinamica_equipo_s, dinamica_equipo_c,
       calculado_en
-    `)
+    `),
+    admin.auth.admin.listUsers(),
+  ])
+
+  const perfilesData = perfilesRes.data
+  const respuestasData = respuestasRes.data
+  const scoringData = scoringRes.data
+  const authUsers = authRes.data?.users ?? []
+
+  // Mapa de lugares desde user_metadata (columna lugar puede no existir en perfiles)
+  const lugarMap = new Map(
+    authUsers.map((u) => [u.id, u.user_metadata?.lugar ?? u.user_metadata?.lugar_id ?? ''])
+  )
 
   // Mapas de búsqueda rápida
   const respuestasMap = new Map(
@@ -63,7 +66,7 @@ export default async function DashboardPage() {
     const completado = respuestasMap.get(p.id) ?? false
     return {
       user_id: p.id,
-      perfiles: [{ nombre: p.nombre, lugar: p.lugar ?? '', equipo: p.equipo, created_at: p.created_at }],
+      perfiles: [{ nombre: p.nombre, lugar: lugarMap.get(p.id) ?? '', equipo: p.equipo ?? '', created_at: p.created_at }],
       completado,
       // Scoring (null si no completó)
       d_global: scoring?.d_global ?? null,

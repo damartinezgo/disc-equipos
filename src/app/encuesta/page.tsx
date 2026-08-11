@@ -21,7 +21,8 @@ export default function EncuestaPage() {
   const [cargandoInicial, setCargandoInicial] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
-  const [tieneProgresoGuardado, setTieneProgresoGuardado] = useState(false)
+  const [mostrarModalProgreso, setMostrarModalProgreso] = useState(false)
+  const [mostrarConfirmacionCierre, setMostrarConfirmacionCierre] = useState(false)
 
   // Cargar progreso existente (por si cerró el navegador a mitad de la encuesta)
   useEffect(() => {
@@ -43,6 +44,9 @@ export default function EncuestaPage() {
         .maybeSingle()
 
       if (data?.completado) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('encuesta_terminada', 'true')
+        }
         router.push('/encuesta/gracias')
         return
       }
@@ -51,7 +55,7 @@ export default function EncuestaPage() {
         setRespuestasMenos(data.respuestas_menos || {})
         const respondidas = Object.keys(data.respuestas_mas || {}).length + Object.keys(data.respuestas_menos || {}).length
         if (respondidas > 0) {
-          setTieneProgresoGuardado(true)
+          setMostrarModalProgreso(true)
         }
         const primeraSinResponder = ITEMS.findIndex(
           (it) => !(data.respuestas_mas?.[it.item] && data.respuestas_menos?.[it.item])
@@ -62,6 +66,21 @@ export default function EncuestaPage() {
     }
     cargar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault()
+      setMostrarConfirmacionCierre(true)
+      window.history.pushState(null, '', window.location.href)
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    window.history.pushState(null, '', window.location.href)
+
+    return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
   const guardarProgreso = useCallback(
@@ -102,14 +121,18 @@ export default function EncuestaPage() {
   async function siguiente() {
     if (!puedeAvanzar) return
 
-    if (indice === TOTAL - 1) {
-      // última pregunta: marcar completado y disparar el cálculo de scoring
-      await supabase
-        .from('respuestas')
-        .update({ completado: true })
-        .eq('user_id', userId)
+      if (indice === TOTAL - 1) {
+        // última pregunta: marcar completado y disparar el cálculo de scoring
+        await supabase
+          .from('respuestas')
+          .update({ completado: true })
+          .eq('user_id', userId)
 
-      await fetch('/api/scoring', { method: 'POST' })
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('encuesta_terminada', 'true')
+        }
+
+        await fetch('/api/scoring', { method: 'POST' })
 
       router.push('/encuesta/gracias')
       return
@@ -120,6 +143,14 @@ export default function EncuestaPage() {
 
   function anterior() {
     if (indice > 0) setIndice((i) => i - 1)
+  }
+
+  function confirmarCierre() {
+    if (typeof window !== 'undefined') {
+      localStorage.clear()
+      sessionStorage.clear()
+    }
+    window.location.href = '/login'
   }
 
   if (cargandoInicial) {
@@ -133,13 +164,10 @@ export default function EncuestaPage() {
   const progreso = Math.round(((indice + 1) / TOTAL) * 100)
 
   return (
-    <main className="min-h-screen bg-[#F7F8FA] px-4 py-10">
-      <div className="mx-auto max-w-2xl">
-        {tieneProgresoGuardado && (
-          <div className="mb-6 rounded-xl bg-[#1F4E79]/10 px-4 py-3 text-sm text-[#1F4E79]">
-            Continuás desde donde lo dejaste. Tu progreso se guarda automáticamente.
-          </div>
-        )}
+    <>
+      <main className="min-h-screen bg-[#F7F8FA] px-4 py-10">
+        <div className="mx-auto max-w-2xl">
+          {/* barra de progreso */}
 
         {/* barra de progreso */}
         <div className="mb-8">
@@ -162,40 +190,44 @@ export default function EncuestaPage() {
           <h2 className="mb-6 text-xl font-semibold text-[#1F2937]">{itemActual.enunciado}</h2>
 
           <div className="space-y-3">
-            <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 pb-2 text-xs font-medium text-gray-400">
-              <span />
-              <span className="text-center">MÁS me describe</span>
-              <span className="text-center">MENOS me describe</span>
-            </div>
+             <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 pb-2 text-xs font-medium text-gray-400">
+               <span />
+               <span className="text-center text-[#00843D]">MÁS me describe</span>
+               <span className="text-center text-[#C00000]">MENOS me describe</span>
+             </div>
 
-            {itemActual.opciones.map((op) => (
-              <div
-                key={op.letra}
-                className="grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-xl border border-gray-200 px-4 py-3"
-              >
-                <span className="text-sm text-gray-700">{op.texto}</span>
-                <button
-                  type="button"
-                  onClick={() => seleccionar('mas', op.letra)}
-                  aria-label={`Marcar "${op.texto}" como MÁS me describe`}
-                  className={`h-6 w-6 justify-self-center rounded-full border-2 transition ${
-                    masSeleccionado === op.letra
-                      ? 'border-[#00843D] bg-[#00843D]'
-                      : 'border-gray-300 hover:border-[#00843D]'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => seleccionar('menos', op.letra)}
-                  aria-label={`Marcar "${op.texto}" como MENOS me describe`}
-                  className={`h-6 w-6 justify-self-center rounded-full border-2 transition ${
-                    menosSeleccionado === op.letra
-                      ? 'border-[#C00000] bg-[#C00000]'
-                      : 'border-gray-300 hover:border-[#C00000]'
-                  }`}
-                />
-              </div>
-            ))}
+             {itemActual.opciones.map((op) => (
+               <div
+                 key={op.letra}
+                 className="grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-xl border border-gray-200 px-4 py-3"
+               >
+                 <span className="text-sm text-gray-700">{op.texto}</span>
+                 <button
+                   type="button"
+                   onClick={() => seleccionar('mas', op.letra)}
+                   aria-label={`Marcar "${op.texto}" como MÁS me describe`}
+                   className={`relative flex h-6 w-6 justify-self-center items-center justify-center rounded-full border-2 text-base font-bold transition ${
+                     masSeleccionado === op.letra
+                       ? 'border-[#00843D] bg-[#00843D] text-white ring-2 ring-[#00843D]/30'
+                       : 'border-[#00843D]/40 bg-transparent text-[#00843D]/60 hover:border-[#00843D] hover:text-[#00843D]'
+                   }`}
+                 >
+                   +
+                 </button>
+                 <button
+                   type="button"
+                   onClick={() => seleccionar('menos', op.letra)}
+                   aria-label={`Marcar "${op.texto}" como MENOS me describe`}
+                   className={`relative flex h-6 w-6 justify-self-center items-center justify-center rounded-full border-2 text-base font-bold transition ${
+                     menosSeleccionado === op.letra
+                       ? 'border-[#C00000] bg-[#C00000] text-white ring-2 ring-[#C00000]/30'
+                       : 'border-[#C00000]/40 bg-transparent text-[#C00000]/60 hover:border-[#C00000] hover:text-[#C00000]'
+                   }`}
+                 >
+                   -
+                 </button>
+               </div>
+             ))}
           </div>
 
           {masSeleccionado && menosSeleccionado && masSeleccionado === menosSeleccionado && (
@@ -226,5 +258,65 @@ export default function EncuestaPage() {
         </div>
       </div>
     </main>
+
+    {mostrarConfirmacionCierre && (
+      <div
+        className="fixed inset-0 z-[9999] flex min-h-screen min-w-screen items-center justify-center bg-black/50 p-4"
+        onClick={(e) => e.target === e.currentTarget && setMostrarConfirmacionCierre(false)}
+      >
+        <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
+          <div className="bg-[#1F4E79] px-6 py-4">
+            <h2 className="text-xl font-semibold text-white">¿Estás seguro de cerrar sesión?</h2>
+          </div>
+          <div className="max-h-[400px] overflow-y-auto p-6">
+            <p className="text-sm text-gray-600">
+              Tu progreso se guarda automáticamente. Si sales ahora, podrás retomar desde donde lo dejaste la próxima vez.
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
+            <button
+              type="button"
+              onClick={() => setMostrarConfirmacionCierre(false)}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={confirmarCierre}
+              className="rounded-lg bg-[#1F4E79] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#173A5C]"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+      )}
+
+      {mostrarModalProgreso && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-[#1F4E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1V10h-4v1l3 1.5V18l3-1.5V13z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                </svg>
+              </div>
+              <p className="text-sm text-gray-700">Continuás desde donde lo dejaste. Tu progreso se guarda automáticamente.</p>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setMostrarModalProgreso(false)}
+                className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C]"
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
