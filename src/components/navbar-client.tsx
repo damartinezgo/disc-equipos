@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { User } from '@supabase/supabase-js'
 import LogoutButton from './logout-button'
+import BienvenidaModal from './bienvenida-modal'
 
 export default function NavbarClient({
   user,
@@ -12,6 +13,7 @@ export default function NavbarClient({
   nombre: string | null
 }) {
   const [dropdownAbierto, setDropdownAbierto] = useState(false)
+  const [mostrarInstrucciones, setMostrarInstrucciones] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -34,20 +36,29 @@ export default function NavbarClient({
   }
 
   return (
-      <nav suppressHydrationWarning className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 backdrop-blur">
+    <>
+      <nav suppressHydrationWarning className="sticky top-0 z-10 border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <img
               src="/logo-rizoma.svg"
               alt="Desarrollo de Líderes y Equipo"
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
             <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
               Desarrollo de Líderes y Equipo
             </span>
           </div>
 
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative flex items-center gap-4" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setMostrarInstrucciones(true)}
+              className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              <span>Instrucciones</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setDropdownAbierto(!dropdownAbierto)}
@@ -74,6 +85,17 @@ export default function NavbarClient({
             )}
           </div>
         </div>
-      </nav>
+      </nav>{mostrarInstrucciones && (
+        <BienvenidaModal
+          onAccept={() => {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('instrucciones_vista', 'true')
+            }
+            setMostrarInstrucciones(false)
+          }}
+          onClose={() => setMostrarInstrucciones(false)}
+        />
+      )}
+    </>
   )
 }

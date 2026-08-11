@@ -47,14 +47,27 @@ export default function DashboardCliente({
   personas: Persona[]
   equipos: string[]
 }) {
+  const [filtroLugar, setFiltroLugar] = useState<string>('todos')
   const [filtroEquipo, setFiltroEquipo] = useState<string>('todos')
   const [filtroEstilo, setFiltroEstilo] = useState<string>('todos')
   const [filtroEstado, setFiltroEstado] = useState<string>('todos')
   const [busqueda, setBusqueda] = useState('')
   const [exportando, setExportando] = useState(false)
 
+  const lugaresUnicos = useMemo(
+    () => Array.from(new Set(personas.map((p) => p.perfiles?.[0]?.lugar).filter(Boolean))) as string[],
+    [personas]
+  )
+
+  const equiposDisponibles = useMemo(() => {
+    const base = filtroLugar === 'todos' ? personas : personas.filter((p) => p.perfiles?.[0]?.lugar === filtroLugar)
+    return Array.from(new Set(base.map((p) => p.perfiles?.[0]?.equipo).filter(Boolean)))
+  }, [personas, filtroLugar])
+
   const filtradas = useMemo(() => {
     return personas.filter((p) => {
+      const lugar = p.perfiles?.[0]?.lugar ?? ''
+      if (filtroLugar !== 'todos' && lugar !== filtroLugar) return false
       if (filtroEquipo !== 'todos' && p.perfiles?.[0]?.equipo !== filtroEquipo) return false
       if (filtroEstilo !== 'todos' && p.estilo_principal !== filtroEstilo) return false
       if (filtroEstado === 'completado' && !p.completado) return false
@@ -63,7 +76,7 @@ export default function DashboardCliente({
         return false
       return true
     })
-  }, [personas, filtroEquipo, filtroEstilo, filtroEstado, busqueda])
+  }, [personas, filtroLugar, filtroEquipo, filtroEstilo, filtroEstado, busqueda])
 
   // Solo los que completaron se pasan a gráficos y exportación
   const conScoring = filtradas.filter((p) => p.completado)
@@ -122,42 +135,64 @@ export default function DashboardCliente({
 
         {/* Filtros */}
         <div className="mb-6 flex flex-wrap gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <input
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar por nombre…"
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
-          />
-          <select
-            value={filtroEquipo}
-            onChange={(e) => setFiltroEquipo(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-          >
-            <option value="todos">Todos los equipos</option>
-            {equipos.map((eq) => (
-              <option key={eq} value={eq}>{eq}</option>
-            ))}
-          </select>
-          <select
-            value={filtroEstilo}
-            onChange={(e) => setFiltroEstilo(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-          >
-            <option value="todos">Todos los estilos</option>
-            {Object.entries(NOMBRE_ESTILO).map(([k, v]) => (
-              <option key={k} value={k}>{k} — {v}</option>
-            ))}
-          </select>
-          <select
-            value={filtroEstado}
-            onChange={(e) => setFiltroEstado(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-          >
+           <input
+             value={busqueda}
+             onChange={(e) => setBusqueda(e.target.value)}
+             placeholder="Buscar por nombre…"
+             className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
+           />
+           <select
+             value={filtroLugar}
+             onChange={(e) => setFiltroLugar(e.target.value)}
+             className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
+           >
+             <option value="todos">Todos los lugares</option>
+             {lugaresUnicos.map((l) => (
+               <option key={l} value={l}>{l}</option>
+             ))}
+           </select>
+           <select
+             value={filtroEquipo}
+             onChange={(e) => setFiltroEquipo(e.target.value)}
+             className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
+           >
+             <option value="todos">Todos los equipos</option>
+             {equiposDisponibles.map((eq) => (
+               <option key={eq} value={eq}>{eq}</option>
+             ))}
+           </select>
+            <select
+              value={filtroEstilo}
+             onChange={(e) => setFiltroEstilo(e.target.value)}
+             className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
+           >
+             <option value="todos">Todos los estilos</option>
+             {Object.entries(NOMBRE_ESTILO).map(([k, v]) => (
+               <option key={k} value={k}>{k} — {v}</option>
+             ))}
+           </select>
+           <select
+             value={filtroEstado}
+             onChange={(e) => setFiltroEstado(e.target.value)}
+             className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
+           >
             <option value="todos">Todos los estados</option>
             <option value="completado">✓ Completado</option>
             <option value="pendiente">⏳ Pendiente</option>
-          </select>
-        </div>
+            </select>
+            <button
+              onClick={() => {
+                setFiltroLugar('todos')
+                setFiltroEquipo('todos')
+                setFiltroEstilo('todos')
+                setFiltroEstado('todos')
+                setBusqueda('')
+              }}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-black hover:bg-gray-50"
+            >
+              Limpiar
+            </button>
+          </div>
 
         {/* Gráficos — solo quienes completaron del filtro activo */}
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
