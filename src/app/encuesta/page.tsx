@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { CheckCircle } from '@/lib/icons'
 import BienvenidaModal from '@/components/bienvenida-modal'
 import itemsData from '@/data/items-disc.json'
 
@@ -51,6 +52,12 @@ export default function EncuestaPage() {
         router.push('/login')
         return
       }
+
+      if (user.user_metadata?.is_admin === true) {
+        router.push('/dashboard')
+        return
+      }
+
       setUserId(user.id)
 
       const { data } = await supabase
@@ -177,14 +184,15 @@ export default function EncuestaPage() {
       localStorage.clear()
       sessionStorage.clear()
     }
-    window.location.href = '/login'
+    router.push('/login')
   }
 
   if (cargandoInicial) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-[#F7F8FA] to-white">
         <div className="flex flex-col items-center">
-          <img src="/logo-rizoma.svg" alt="Rizoma Logo" className="mb-8 h-20 w-auto" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-rizoma.svg" alt="Rizoma Logo" className="mb-8 h-24 w-auto" />
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#1F4E79] border-t-transparent" />
           <p className="mt-4 text-sm text-gray-500">Preparando tu experiencia…</p>
         </div>
@@ -333,10 +341,7 @@ export default function EncuestaPage() {
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-[#1F4E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1V10h-4v1l3 1.5V18l3-1.5V13z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                </svg>
+               <CheckCircle className="h-6 w-6 text-[#1F4E79]" />
               </div>
               <p className="text-sm text-gray-700">Continuás desde donde lo dejaste. Tu progreso se guarda automáticamente.</p>
             </div>

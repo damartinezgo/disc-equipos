@@ -75,13 +75,17 @@ export async function POST() {
     'Dinámica de equipo': 'dinamica_equipo'
   }
 
-  itemsData.forEach((item: any) => {
+  itemsData.forEach((item: {
+    item: { toString: () => string }
+    categoria: string
+    opciones: { letra: string; disc: string }[]
+  }) => {
     const itemId = item.item.toString()
     const catPrefix = categoryMap[item.categoria]
     
     const letraMas = mas[itemId]
     if (letraMas) {
-      const opcion = item.opciones.find((o: any) => o.letra === letraMas)
+      const opcion = item.opciones.find((o: { letra: string }) => o.letra === letraMas)
       if (opcion) {
         const disc = opcion.disc.toLowerCase() // "d", "i", "s", "c"
         scores[`${disc}_global` as keyof typeof scores] += 1
@@ -93,7 +97,7 @@ export async function POST() {
 
     const letraMenos = menos[itemId]
     if (letraMenos) {
-      const opcion = item.opciones.find((o: any) => o.letra === letraMenos)
+      const opcion = item.opciones.find((o: { letra: string }) => o.letra === letraMenos)
       if (opcion) {
         const disc = opcion.disc.toLowerCase()
         scores[`${disc}_global` as keyof typeof scores] -= 1

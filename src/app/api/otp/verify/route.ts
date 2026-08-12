@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, code } = await req.json()
+    const { email, code, purpose = 'signup' } = await req.json()
 
     if (!email || !code) {
       return NextResponse.json(
@@ -49,56 +49,50 @@ export async function POST(req: NextRequest) {
       console.error('OTP mark used error:', updateError.message)
     }
 
-    let userId: string | null = null
+    if (purpose === 'recovery') {
+      let page = 1
+      const perPage = 100
+      let userId: string | null = null
 
-    try {
-      const { data, error: createUserError } = await admin.auth.admin.createUser({
-        email: email.toLowerCase(),
-        email_confirm: true,
-        user_metadata: {
-          nombre: 'Sin nombre',
-          terminos_aceptados: true,
-        },
-      })
+      while (true) {
+        const { data, error } = await admin.auth.admin.listUsers({ page, perPage })
 
-      if (createUserError && !createUserError.message?.includes('already')) {
+        if (error) {
+          console.error('OTP recovery user lookup error:', error)
+          return NextResponse.json(
+            { error: 'Error al verificar el correo electrónico' },
+            { status: 500 }
+          )
+        }
+
+        const users = data?.users ?? []
+        const match = users.find(
+          (u) => (u.email ?? '').toLowerCase() === email.toLowerCase()
+        )
+
+        if (match) {
+          userId = match.id
+          break
+        }
+
+        if (users.length < perPage) {
+          break
+        }
+
+        page += 1
+      }
+
+      if (!userId) {
         return NextResponse.json(
-          { error: createUserError.message },
-          { status: 400 }
+          { error: 'No se encontró el usuario' },
+          { status: 404 }
         )
       }
 
-      if (data?.user?.id) {
-        userId = data.user.id
-      } else {
-        const { data: listData } = await admin.auth.admin.listUsers({
-          page: 1,
-          perPage: 100,
-        })
-        if (listData?.users) {
-          const existingUser = listData.users.find(
-            (u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase()
-          )
-          if (existingUser) {
-            userId = existingUser.id
-          }
-        }
-      }
-    } catch {
-      return NextResponse.json(
-        { error: 'Error al crear el usuario' },
-        { status: 500 }
-      )
+      return NextResponse.json({ ok: true, user_id: userId })
     }
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'No se pudo crear el usuario' },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({ ok: true, user_id: userId })
+    return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json(
       { error: 'Error interno del servidor' },

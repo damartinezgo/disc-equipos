@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 export async function GET() {
   const admin = createServiceClient()
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const results: Record<string, any> = {}
 
   {
@@ -14,13 +15,13 @@ export async function GET() {
   }
 
   {
-    const { data, error, count } = await admin.from('respuestas').select('*', { count: 'exact' })
+    const { error, count } = await admin.from('respuestas').select('*', { count: 'exact' })
     results.respuestas_count = count ?? 0
     results.respuestas_error = error?.message
   }
 
   {
-    const { data, error, count } = await admin.from('scoring').select('*', { count: 'exact' })
+    const { error, count } = await admin.from('scoring').select('*', { count: 'exact' })
     results.scoring_count = count ?? 0
     results.scoring_error = error?.message
   }

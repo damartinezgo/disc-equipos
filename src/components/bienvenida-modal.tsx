@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { X } from '@/lib/icons'
 
 export default function BienvenidaModal({
   onAccept,
@@ -40,11 +41,12 @@ export default function BienvenidaModal({
           onClick={onClose}
           className="absolute top-3 right-3 z-10 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
         >
-          ✕
+          <X className="h-5 w-5" />
         </button>
 
         <div className="relative flex items-center justify-center border-b border-gray-200 bg-[#1F4E79]/10 px-6 py-3">
-          <img src="/logo-rizoma.svg" alt="Logo" className="absolute left-6 h-6 w-auto" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-rizoma.svg" alt="Logo" className="absolute left-6 h-8 w-auto" />
           <h2 className="text-lg font-bold text-[#1F4E79]">Instrucciones DISC</h2>
         </div>
 
@@ -68,7 +70,8 @@ export default function BienvenidaModal({
             </p>
           </div>
           <div className="w-full md:w-1/2 flex items-center justify-center p-6 bg-gray-50 border-l border-gray-100">
-            <img src="/pantalla-carga.png" alt="Modelo DISC" className="max-w-full h-auto rounded-xl shadow-sm object-contain" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/pantalla-carga.png" alt="Modelo DISC" className="max-w-full h-auto rounded-xl shadow-sm object-contain" />
           </div>
         </div>
 

@@ -1,17 +1,20 @@
 import Link from 'next/link'
+import Image from 'next/image'
+import { BarChart3 } from '@/lib/icons'
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-[#F8FAFC] to-white flex flex-col">
+    <div className="min-h-screen bg-linear-to-r from-white via-[#F8FAFC] to-white flex flex-col">
       {/* Header robusto y de ancho completo */}
       <header className="w-full border-b border-[#F1F5F9] bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/">
-            <img
-              src="/logo-rizoma.svg"
-              alt="Rizoma"
-              className="h-12 w-auto cursor-pointer"
-            />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-rizoma.svg"
+            alt="Rizoma"
+            className="h-14 w-auto cursor-pointer"
+          />
           </Link>
           <Link
             href="/login"
@@ -63,7 +66,7 @@ export default function Home() {
         <div className="relative flex flex-1 items-center justify-center lg:justify-end">
           
           {/* 1. Fondo difuminado (Glow ambiental) */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-orange-200/60 via-blue-200/50 to-purple-200/60 rounded-3xl blur-3xl opacity-70 -z-10"></div>
+          <div className="absolute -inset-4 bg-linear-to-r from-orange-200/60 via-blue-200/50 to-purple-200/60 rounded-3xl blur-3xl opacity-70 -z-10"></div>
 
           {/* 2. Tarjeta contenedora de la Imagen */}
           <div className="relative bg-white p-3 md:p-4 rounded-3xl border border-slate-200/80 shadow-2xl max-w-lg w-full">
@@ -76,16 +79,18 @@ export default function Home() {
 
             {/* Imagen integrada */}
             <div className="overflow-hidden rounded-2xl bg-slate-50 border border-slate-100">
-              <img 
-                src="/pantalla-carga.png" 
-                alt="Evaluación DISC Rizoma" 
-                className="w-full h-auto object-cover"
-              />
+            <Image 
+              src="/pantalla-carga.png" 
+              alt="Evaluación DISC Rizoma" 
+              className="w-full h-auto object-cover"
+              width={500}
+              height={300}
+            />
             </div>
 
             {/* Badge Flotante Inferior */}
             <div className="absolute -bottom-4 -right-3 bg-slate-900 text-white shadow-xl px-4 py-2 rounded-2xl flex items-center gap-2 z-10">
-              <span className="text-base">📊</span>
+              <BarChart3 className="h-5 w-5" />
               <div className="text-left">
                 <p className="text-[10px] text-slate-400 leading-none">Resultados</p>
                 <p className="text-xs font-bold leading-tight">Instantáneos y Precisos</p>

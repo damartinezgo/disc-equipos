@@ -13,14 +13,18 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // Verifica que sea encuestador
-  const { data: esEncuestador } = await supabase
-    .from('encuestadores')
-    .select('user_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // Verifica que sea encuestador o admin
+  const isAdmin = user.user_metadata?.is_admin === true
 
-  if (!esEncuestador) redirect('/encuesta')
+  if (!isAdmin) {
+    const { data: esEncuestador } = await supabase
+      .from('encuestadores')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!esEncuestador) redirect('/encuesta')
+  }
 
   // Service role para leer datos de todos los usuarios sin restricción de RLS
   const admin = createServiceClient()
@@ -47,6 +51,18 @@ export default async function DashboardPage() {
   const scoringData = scoringRes.data
   const authUsers = authRes.data?.users ?? []
 
+  // IDs de usuarios admin (no participan en la encuesta)
+  const adminIds = new Set(
+    authUsers
+      .filter((u) => u.user_metadata?.is_admin === true)
+      .map((u) => u.id)
+  )
+
+  // Mapa de emails para mostrar fallback cuando nombre es "Sin nombre"
+  const emailMap = new Map(
+    authUsers.map((u) => [u.id, u.email ?? ''])
+  )
+
   // Mapa de lugares desde user_metadata (columna lugar puede no existir en perfiles)
   const lugarMap = new Map(
     authUsers.map((u) => [u.id, u.user_metadata?.lugar ?? u.user_metadata?.lugar_id ?? ''])
@@ -60,13 +76,17 @@ export default async function DashboardPage() {
     (scoringData ?? []).map((s) => [s.user_id, s])
   )
 
-  // Combinar: parte de perfiles, añade estado + scoring
-  const personas = (perfilesData ?? []).map((p) => {
-    const scoring = scoringMap.get(p.id)
-    const completado = respuestasMap.get(p.id) ?? false
-    return {
-      user_id: p.id,
-      perfiles: [{ nombre: p.nombre, lugar: lugarMap.get(p.id) ?? '', equipo: p.equipo ?? '', created_at: p.created_at }],
+  // Combinar: parte de perfiles, añade estado + scoring.
+  // Se excluyen usuarios admin (is_admin=true) — no participan en la encuesta.
+  const personas = (perfilesData ?? [])
+    .filter((p) => !adminIds.has(p.id))
+    .map((p) => {
+      const scoring = scoringMap.get(p.id)
+      const completado = respuestasMap.get(p.id) ?? false
+      const nombre = p.nombre || 'Sin nombre'
+      return {
+        user_id: p.id,
+        perfiles: [{ nombre, lugar: lugarMap.get(p.id) ?? '', equipo: p.equipo ?? '', created_at: p.created_at, correo: emailMap.get(p.id) ?? '' }],
       completado,
       // Scoring (null si no completó)
       d_global: scoring?.d_global ?? null,
@@ -95,11 +115,7 @@ export default async function DashboardPage() {
     }
   })
 
-  const equiposUnicos = Array.from(
-    new Set((perfilesData ?? []).map((p) => p.equipo).filter(Boolean))
-  ) as string[]
-
   return (
-    <DashboardCliente personas={personas} equipos={equiposUnicos} />
+    <DashboardCliente personas={personas} />
   )
 }

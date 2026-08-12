@@ -1,8 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { User } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
+import { X, AlertCircle } from '@/lib/icons'
 
-export default function LogoutButton() {
+export default function LogoutButton({ user }: { user: User }) {
+  const router = useRouter()
   const [saliendo, setSaliendo] = useState(false)
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
   const [encuestaTerminada] = useState(() => {
@@ -42,11 +47,11 @@ export default function LogoutButton() {
 
   async function handleLogout() {
     setSaliendo(true)
-    await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
-    localStorage.clear()
-    sessionStorage.clear()
     sessionStorage.setItem('just_logout', 'true')
-    window.location.href = '/login'
+    const supabase = createClient()
+    await supabase.auth.signOut().catch(() => {})
+    localStorage.clear()
+    router.push('/login')
   }
 
   return (
@@ -60,7 +65,7 @@ export default function LogoutButton() {
       </button>
 
       {mostrarConfirmacion && (
-        <div className="fixed inset-0 z-[9999] flex min-h-screen min-w-screen items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-9999 flex min-h-screen min-w-screen items-center justify-center bg-black/50 p-4">
           <div
             ref={modalRef}
             className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
@@ -70,22 +75,22 @@ export default function LogoutButton() {
               onClick={() => setMostrarConfirmacion(false)}
               className="absolute top-3 right-3 z-10 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
             >
-              ✕
+              <X className="h-5 w-5" />
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0">
-                <svg className="h-7 w-7 text-[#C00000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0018 0z" />
-                </svg>
+              <div className="shrink-0">
+              <AlertCircle className="h-7 w-7 text-[#C00000]" />
               </div>
               <h2 className="text-lg font-bold text-[#1F2937]">¿Estás seguro?</h2>
             </div>
 
             <p className="mt-4 text-sm text-gray-600">
-              {encuestaTerminada
+              {user.user_metadata?.is_admin
+                ? 'Perderás el acceso a esta sesión. Deberás iniciar sesión nuevamente para continuar.'
+                : encuestaTerminada
                 ? 'Tu encuesta está completada. No perderás nada al cerrar sesión.'
-                : 'Recuerda que si cierras sesión, el avance se guarda correctamente. Podrás retomar desde donde lo dejaste la próxima vez.'}
+                : 'Recuerda que si cierras sesión, el avance de tu encuesta se guarda correctamente. Podrás retomar desde donde lo dejaste la próxima vez.'}
             </p>
 
             <div className="mt-6 flex justify-end gap-3">

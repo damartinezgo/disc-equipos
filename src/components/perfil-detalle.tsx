@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ComponentType } from 'react'
 import Link from 'next/link'
+import { ArrowLeft, Activity, Compass, Cpu, Heart, MessageCircle, Shield, User, Users } from '@/lib/icons'
+import type { LucideProps } from '@/lib/icons'
 import GraficoDisc from '@/app/dashboard/[userId]/grafico-disc'
 import itemsData from '@/data/items-disc.json'
 
@@ -25,15 +27,27 @@ const DISC_COLOR: Record<string, string> = {
   C: '#00843D',
 }
 
-const MODULO_STYLES: Record<string, { bg: string; text: string; icon: string }> = {
-  'Orientación general de trabajo': { bg: '#F1F5F9', text: '#334155', icon: '⚪' },
-  'Toma de decisiones':             { bg: '#EFF6FF', text: '#1E40AF', icon: '🔵' },
-  'Comunicación':                   { bg: '#FFF7ED', text: '#C2410C', icon: '🟠' },
-  'Motivadores':                    { bg: '#F3E8FF', text: '#6B21A8', icon: '🟣' },
-  'Delegación':                     { bg: '#ECFDF5', text: '#047857', icon: '🟢' },
-  'Acompañamiento, seguimiento y retroalimentación': { bg: '#E0F2FE', text: '#0369A1', icon: '🩵' },
-  'Manejo de conflicto':            { bg: '#FFE4E6', text: '#BE123C', icon: '🔴' },
-  'Rol natural en el equipo':       { bg: '#EEF2FF', text: '#3730A3', icon: '🔷' },
+const MODULO_STYLES: Record<string, { bg: string; text: string }> = {
+  'Orientación general de trabajo': { bg: '#F1F5F9', text: '#334155' },
+  'Toma de decisiones':             { bg: '#EFF6FF', text: '#1E40AF' },
+  'Comunicación':                   { bg: '#FFF7ED', text: '#C2410C' },
+  'Motivadores':                    { bg: '#F3E8FF', text: '#6B21A8' },
+  'Delegación':                     { bg: '#ECFDF5', text: '#047857' },
+  'Acompañamiento, seguimiento y retroalimentación': { bg: '#E0F2FE', text: '#0369A1' },
+  'Manejo de conflicto':            { bg: '#FFE4E6', text: '#BE123C' },
+  'Rol natural en el equipo':       { bg: '#EEF2FF', text: '#3730A3' },
+}
+
+// Icon component per module
+const MODULO_ICONOS: Record<string, ComponentType<LucideProps>> = {
+  'Orientación general de trabajo':            Compass,
+  'Toma de decisiones':                        Cpu,
+  'Comunicación':                              MessageCircle,
+  'Motivadores':                               Heart,
+  'Delegación':                                Users,
+  'Acompañamiento, seguimiento y retroalimentación': Activity,
+  'Manejo de conflicto':                       Shield,
+  'Rol natural en el equipo':                  User,
 }
 
 type Item = { item: number; modulo: string; categoria: string; enunciado: string; opciones: { letra: string; texto: string; disc: string }[] }
@@ -53,9 +67,17 @@ const MODULO_TW: Record<string, { borderLeft: string; badge: string; cardBg: str
 const MODULO_TW_DEFAULT = { borderLeft: 'border-l-slate-400', badge: 'bg-slate-100 text-slate-700', cardBg: 'bg-slate-50', cardBorder: 'border-slate-100' }
 
 // Tipos mínimos (ajusta si generas tipos desde Supabase con `supabase gen types`)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Scoring = Record<string, any>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Rubrica = Record<string, any>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TextoPerfil = Record<string, any> | null
+
+const ModuloIcon = ({ modulo, className }: { modulo: string; className?: string }) => {
+  const Icon = MODULO_ICONOS[modulo] || MODULO_ICONOS['Orientación general de trabajo']
+  return <Icon className={className} />
+}
 
 export default function PerfilDetalle({
   nombre,
@@ -79,6 +101,16 @@ export default function PerfilDetalle({
   const tabs = Array.from(new Set(rubrica?.map((r) => r.categoria) ?? []))
   const [mainTab, setMainTab] = useState<'vision' | 'recomendaciones' | 'respuestas'>('vision')
   const [selectedModulo, setSelectedModulo] = useState<string | null>(null)
+
+  function getIniciales(nombre: string): string {
+    return nombre
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
 
   // Group items by modulo, preserving order
   const modulosOrdenados = Array.from(new Set(ITEMS.map((it) => it.modulo)))
@@ -108,12 +140,10 @@ export default function PerfilDetalle({
               className="inline-flex items-center justify-center w-8 h-8 text-slate-500 hover:text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors shadow-sm shrink-0"
               title="Volver al dashboard"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+              <ArrowLeft className="w-4 h-4" />
             </Link>
             <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-lg shrink-0">
-              {nombre.slice(0, 2).toUpperCase()}
+              {getIniciales(nombre)}
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -152,10 +182,10 @@ export default function PerfilDetalle({
 
       {/* Main Tabs */}
       <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex gap-6" aria-label="Tabs">
+        <nav className="-mb-px flex gap-1 overflow-x-auto whitespace-nowrap" aria-label="Tabs">
           <button
             onClick={() => setMainTab('vision')}
-            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap border-b-2 py-4 px-4 text-sm font-medium transition-colors ${
               mainTab === 'vision'
                 ? 'border-[#1F4E79] text-[#1F4E79]'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -165,7 +195,7 @@ export default function PerfilDetalle({
           </button>
           <button
             onClick={() => setMainTab('recomendaciones')}
-            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap border-b-2 py-4 px-4 text-sm font-medium transition-colors ${
               mainTab === 'recomendaciones'
                 ? 'border-[#1F4E79] text-[#1F4E79]'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -175,7 +205,7 @@ export default function PerfilDetalle({
           </button>
           <button
             onClick={() => setMainTab('respuestas')}
-            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap border-b-2 py-4 px-4 text-sm font-medium transition-colors ${
               mainTab === 'respuestas'
                 ? 'border-[#1F4E79] text-[#1F4E79]'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -199,7 +229,7 @@ export default function PerfilDetalle({
             </div>
 
             {/* Contenedor optimizado para el gráfico */}
-            <div className="w-full flex-1 flex items-center justify-center bg-slate-50/50 rounded-lg border border-dashed border-slate-200 py-4">
+            <div className="w-full h-55 bg-slate-50/50 rounded-lg border border-dashed border-slate-200 py-4">
               <GraficoDisc d={scoring.d_global} i={scoring.i_global} s={scoring.s_global} c={scoring.c_global} />
             </div>
 
@@ -279,7 +309,7 @@ export default function PerfilDetalle({
             </p>
             <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-x-visible -mx-3 md:mx-0 px-3 md:px-0 pb-2 md:pb-0" aria-label="Modules">
               {modulosConRespuestas.map((modulo) => {
-                const style = MODULO_STYLES[modulo] ?? { icon: '📋' }
+                const style = MODULO_STYLES[modulo] ?? { bg: '#F1F5F9', text: '#334155' }
                 const isActive = activeModulo === modulo
                 return (
                   <button
@@ -291,7 +321,9 @@ export default function PerfilDetalle({
                         : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                     }`}
                   >
-                    <span className="text-sm">{style.icon}</span>
+                        <span className="text-sm flex items-center justify-center" style={{ color: style.text }}>
+                          <ModuloIcon modulo={modulo} className="h-4 w-4" />
+                        </span>
                     <span className="truncate">{modulo}</span>
                   </button>
                 )
@@ -302,7 +334,7 @@ export default function PerfilDetalle({
           {/* Área de Contenido del Módulo */}
           {activeModulo && (() => {
             const modulo = activeModulo
-            const style = MODULO_STYLES[modulo] ?? { bg: '#F1F5F9', text: '#334155', icon: '📋' }
+            const style = MODULO_STYLES[modulo] ?? { bg: '#F1F5F9', text: '#334155' }
             const tw = MODULO_TW[modulo] ?? MODULO_TW_DEFAULT
             const itemsDelModulo = ITEMS.filter((it) => it.modulo === modulo)
             const itemsConRespuesta = itemsDelModulo.filter(
@@ -315,7 +347,7 @@ export default function PerfilDetalle({
               >
                 <div className="flex justify-between items-center mb-6">
                   <h4 className="text-md font-bold text-slate-800 flex items-center gap-2">
-                    <span>{style.icon}</span> {modulo}
+                   <ModuloIcon modulo={modulo} className="h-4 w-4" /> <span style={{ color: style.text }}>{modulo}</span>
                   </h4>
                   <span className="text-xs font-medium text-slate-400 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full">
                     {itemsConRespuesta.length} pregunta{itemsConRespuesta.length !== 1 ? 's' : ''}

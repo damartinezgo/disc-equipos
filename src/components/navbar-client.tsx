@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
+import { X, AlertCircle } from '@/lib/icons'
 import LogoutButton from './logout-button'
 import BienvenidaModal from './bienvenida-modal'
 
@@ -16,8 +17,12 @@ export default function NavbarClient({
 }) {
   const [dropdownAbierto, setDropdownAbierto] = useState(false)
   const [mostrarInstrucciones, setMostrarInstrucciones] = useState(false)
+  const [mostrarLogoutConfirm, setMostrarLogoutConfirm] = useState(false)
+  const [saliendo, setSaliendo] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
+  const router = useRouter()
   const ocultarInstrucciones = pathname.includes('/gracias') || pathname.includes('/dashboard')
 
   useEffect(() => {
@@ -29,6 +34,38 @@ export default function NavbarClient({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMostrarLogoutConfirm(false)
+    }
+    if (mostrarLogoutConfirm) {
+      document.addEventListener('keydown', onKeyDown)
+    }
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [mostrarLogoutConfirm])
+
+  useEffect(() => {
+    function handleOverlayClick(e: MouseEvent) {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        setMostrarLogoutConfirm(false)
+      }
+    }
+    if (mostrarLogoutConfirm) {
+      document.addEventListener('mousedown', handleOverlayClick)
+    }
+    return () => document.removeEventListener('mousedown', handleOverlayClick)
+  }, [mostrarLogoutConfirm])
+
+  async function handleLogoutConfirmado() {
+    setMostrarLogoutConfirm(false)
+    setSaliendo(true)
+    sessionStorage.setItem('just_logout', 'true')
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    localStorage.clear()
+    router.push('/login')
+  }
 
   function getInitials(nombre?: string) {
     if (!nombre) return 'U'
@@ -44,13 +81,19 @@ export default function NavbarClient({
       <nav suppressHydrationWarning className="sticky top-0 z-10 border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <Link href="/">
-              <img
-                src="/logo-rizoma.svg"
-                alt="Desarrollo de Líderes y Equipo"
-                className="h-12 w-auto cursor-pointer"
-              />
-            </Link>
+            <button
+              type="button"
+              onClick={() => setMostrarLogoutConfirm(true)}
+              className="cursor-pointer focus:outline-none"
+              aria-label="Cerrar sesión"
+            >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-rizoma.svg"
+              alt="Desarrollo de Líderes y Equipo"
+              className="h-14 w-auto cursor-pointer transition-transform hover:scale-105"
+            />
+            </button>
             <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
               Desarrollo de Líderes y Equipo
             </span>
@@ -87,7 +130,7 @@ export default function NavbarClient({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <LogoutButton />
+                  <LogoutButton user={user} />
                 </div>
               </div>
             )}
@@ -103,6 +146,57 @@ export default function NavbarClient({
           }}
           onClose={() => setMostrarInstrucciones(false)}
         />
+      )}
+
+      {mostrarLogoutConfirm && (
+        <div className="fixed inset-0 z-9999 flex min-h-screen min-w-screen items-center justify-center bg-black/50 p-4">
+          <div
+            ref={modalRef}
+            className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <button
+              type="button"
+              onClick={() => setMostrarLogoutConfirm(false)}
+              className="absolute top-3 right-3 z-10 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="shrink-0">
+              <AlertCircle className="h-7 w-7 text-[#C00000]" />
+              </div>
+              <h2 className="text-lg font-bold text-[#1F2937]">
+                {user.user_metadata?.is_admin ? '¿Cerrar sesión?' : '¿Estás seguro?'}
+              </h2>
+            </div>
+
+            <p className="mt-4 text-sm text-gray-600">
+              {user.user_metadata?.is_admin
+                ? 'Perderás el acceso a esta sesión. Deberás iniciar sesión nuevamente para continuar.'
+                : 'Recuerda que si cierras sesión, el avance de tu encuesta se guarda correctamente. Podrás retomar desde donde lo dejaste la próxima vez.'}
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setMostrarLogoutConfirm(false)}
+                disabled={saliendo}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleLogoutConfirmado}
+                disabled={saliendo}
+                className="rounded-lg bg-[#C00000] px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
+              >
+                {saliendo ? 'Cerrando…' : 'Cerrar sesión'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )
