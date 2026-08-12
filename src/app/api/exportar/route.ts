@@ -34,28 +34,48 @@ export async function POST(req: NextRequest) {
   const admin = createServiceClient()
 
   // Leer datos (queries independientes, sin FK)
-  const { data: perfilesData } = await admin
-    .from('perfiles')
-    .select('id, nombre, equipo')
-    .in('id', userIds)
+  // Supabase .in() tiene límite de 1000 items → chunk para datasets grandes
+  const CHUNK = 1000
+  const chunks: string[][] = []
+  for (let i = 0; i < userIds.length; i += CHUNK) chunks.push(userIds.slice(i, i + CHUNK))
 
-  const { data: respuestasData } = await admin
-    .from('respuestas')
-    .select('user_id, completado')
-    .in('user_id', userIds)
+  const perfilesRes = await Promise.all(
+    chunks.map((c) => admin.from('perfiles').select('id, nombre, equipo, lugar').in('id', c))
+  )
+  const perfilesData = perfilesRes.flatMap((r) => r.data ?? [])
 
-  const { data: scoringData } = await admin
-    .from('scoring')
-    .select('*')
-    .in('user_id', userIds)
+  const respuestasRes = await Promise.all(
+    chunks.map((c) => admin.from('respuestas').select('user_id, completado').in('user_id', c))
+  )
+  const respuestasData = respuestasRes.flatMap((r) => r.data ?? [])
 
-  // Leer lugares y correos desde auth.users.user_metadata
-  const { data: authRes } = await admin.auth.admin.listUsers()
+  const scoringRes = await Promise.all(
+    chunks.map((c) => admin.from('scoring').select('*').in('user_id', c))
+  )
+  const scoringData = scoringRes.flatMap((r) => r.data ?? [])
+
+  // Leer correos/lugares desde auth.users (listUsers pagina: 100/page por defecto)
+  const allAuthUsers: { id: string; email?: string; user_metadata?: Record<string, unknown> }[] = []
+  {
+    let page = 1
+    const perPage = 100
+    while (true) {
+      const { data } = await admin.auth.admin.listUsers({ page, perPage })
+      const users = data?.users ?? []
+      allAuthUsers.push(...users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        user_metadata: u.user_metadata,
+      })))
+      if (users.length < perPage) break
+      page++
+    }
+  }
   const lugarMap = new Map(
-    (authRes?.users ?? []).map((u) => [u.id, u.user_metadata?.lugar ?? ''])
+    allAuthUsers.map((u) => [u.id, (u.user_metadata?.lugar as string) ?? ''])
   )
   const emailMap = new Map(
-    (authRes?.users ?? []).map((u) => [u.id, u.email ?? ''])
+    allAuthUsers.map((u) => [u.id, u.email ?? ''])
   )
 
   if (!perfilesData) {
@@ -68,15 +88,18 @@ export async function POST(req: NextRequest) {
   const respuestasMap = new Map((respuestasData ?? []).map((r) => [r.user_id, r]))
 
   // Combinar datos por persona
-  const filas = userIds.map((uid) => ({
-    user_id: uid,
-    nombre: perfilesMap.get(uid)?.nombre ?? '',
-    correo: emailMap.get(uid) ?? '',
-    lugar: lugarMap.get(uid) ?? '',
-    equipo: perfilesMap.get(uid)?.equipo ?? '',
-    completado: respuestasMap.get(uid)?.completado ? 'Sí' : 'No',
-    ...scoringMap.get(uid),
-  }))
+  const filas = userIds.map((uid) => {
+    const perfil = perfilesMap.get(uid)
+    return {
+      user_id: uid,
+      nombre: perfil?.nombre ?? '',
+      correo: emailMap.get(uid) ?? '',
+      lugar: perfil?.lugar ?? lugarMap.get(uid) ?? '',
+      equipo: perfil?.equipo ?? '',
+      completado: respuestasMap.get(uid)?.completado ? 'Sí' : 'No',
+      ...scoringMap.get(uid),
+    }
+  })
 
   // ── Construir el workbook desde cero ──────────────────────────────────────
   const workbook = new ExcelJS.Workbook()
