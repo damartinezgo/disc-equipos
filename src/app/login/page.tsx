@@ -76,13 +76,14 @@ export default function LoginPage() {
     }
 
     // Verificar si ya aceptó términos (consultando la BD, no localStorage)
-    const { data: perfil } = await supabase
+    const { data: perfil, error: perfilError } = await supabase
       .from('perfiles')
       .select('terminos_aceptados')
       .eq('id', user.id)
       .maybeSingle()
 
-    if (perfil?.terminos_aceptados !== true) {
+    // Si la BD responde y aún no aceptó → mostrar modal. Si la columna no existe todavía, saltar.
+    if (!perfilError && perfil?.terminos_aceptados !== true) {
       setMostrarTerminos(true)
       return
     }
@@ -177,12 +178,18 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
-          ¿No tienes cuenta?{' '}
-          <Link href="/registro" className="font-medium text-[#1F4E79] hover:underline">
-            Regístrate
-          </Link>
-        </p>
+         <p className="mt-6 text-center text-sm text-gray-500">
+           ¿No tienes cuenta?{' '}
+           <Link href="/registro" className="font-medium text-[#1F4E79] hover:underline">
+             Regístrate
+           </Link>
+         </p>
+
+         <div className="mt-4 text-center">
+           <Link href="/login/recuperar" className="text-sm text-[#1F4E79] hover:underline">
+             ¿Olvidaste tu contraseña?
+           </Link>
+         </div>
       </div>
       </main>
 

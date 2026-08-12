@@ -31,10 +31,20 @@ export async function createClient() {
 // (nunca importar este archivo en un componente cliente)
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
+function resolveAdminEnv() {
+  // Prioriza las nuevas env vars del @supabase/server SDK;
+  // cae en las legacy vars (SUPABASE_SERVICE_ROLE_KEY) si las nuevas no existen
+  return {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
+  }
+}
+
 export function createServiceClient() {
+  const { url, key } = resolveAdminEnv()
   return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    url!,
+    key!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 }

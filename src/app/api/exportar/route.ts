@@ -178,8 +178,8 @@ export async function POST(req: NextRequest) {
             minLength: 10,
             maxLength: 90,
             cfvo: [{ type: 'num', value: -32 }, { type: 'num', value: 32 }],
-            // @ts-ignore ExcelJS types incompletos para color en dataBar
-            color: { argb: `FF${hex}` },
+            // @ts-expect-error — ExcelJS types incompletos para color en dataBar
+color: { argb: `FF${hex}` },
             showValue: true,
             gradient: true,
           },
