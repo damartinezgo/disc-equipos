@@ -273,7 +273,7 @@ export default function RecuperarPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
+                    className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 text-base md:text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
                     placeholder="usuario@empresa.com"
                   />
                 </div>
@@ -431,7 +431,7 @@ export default function RecuperarPage() {
                       minLength={8}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 pr-10 text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
+                      className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 pr-10 text-base md:text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
                       placeholder="Mínimo 8 caracteres"
                     />
                     <button
@@ -470,7 +470,7 @@ export default function RecuperarPage() {
                       minLength={8}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 pr-10 text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
+                      className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 pr-10 text-base md:text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
                       placeholder="Repite la contraseña"
                     />
                     <button

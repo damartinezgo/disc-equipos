@@ -129,13 +129,13 @@ export default function ResetPage() {
                       minLength={8}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
+                      className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 pr-10 text-base md:text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
                       placeholder="Mínimo 8 caracteres"
                     />
                     <button
                       type="button"
                       onClick={() => setMostrarPassword(!mostrarPassword)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
                       aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     >
                       {mostrarPassword ? (
@@ -160,13 +160,13 @@ export default function ResetPage() {
                       minLength={8}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
+                      className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 pr-10 text-base md:text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
                       placeholder="Repite la contraseña"
                     />
                     <button
                       type="button"
                       onClick={() => setMostrarConfirm(!mostrarConfirm)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
                       aria-label={mostrarConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     >
                       {mostrarConfirm ? (
@@ -208,7 +208,7 @@ export default function ResetPage() {
                 <button
                   type="submit"
                   disabled={cargando}
-                  className="w-full rounded-lg bg-[#1F4E79] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg bg-[#1F4E79] px-4 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {cargando ? 'Cambiando…' : 'Cambiar contraseña'}
                 </button>
