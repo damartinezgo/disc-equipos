@@ -85,7 +85,11 @@ export default function Home() {
 
             {/* Badge Flotante Inferior */}
             <div className="absolute -bottom-4 -right-3 bg-slate-900 text-white shadow-xl px-4 py-2 rounded-2xl flex items-center gap-2 z-10">
-              <span className="text-base">📊</span>
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <rect x="3" y="13" width="4" height="8" rx="1" strokeWidth={2} />
+                <rect x="10" y="8" width="4" height="13" rx="1" strokeWidth={2} />
+                <rect x="17" y="3" width="4" height="18" rx="1" strokeWidth={2} />
+              </svg>
               <div className="text-left">
                 <p className="text-[10px] text-slate-400 leading-none">Resultados</p>
                 <p className="text-xs font-bold leading-tight">Instantáneos y Precisos</p>

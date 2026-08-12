@@ -189,8 +189,8 @@ export default function DashboardCliente({
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
           >
             <option value="todos">Estado</option>
-            <option value="completado">✓ Completado</option>
-            <option value="pendiente">⏳ Pendiente</option>
+            <option value="completado">Completado</option>
+            <option value="pendiente">Pendiente</option>
           </select>
           <button
             onClick={() => {
@@ -297,11 +297,18 @@ export default function DashboardCliente({
                     <td className="px-5 py-3">
                       {p.completado ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-                          ✓ Completado
+                          <svg className="h-3 w-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Completado
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700">
-                          ⏳ Pendiente
+                          <svg className="h-3 w-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7v5l3 3" />
+                          </svg>
+                          Pendiente
                         </span>
                       )}
                     </td>

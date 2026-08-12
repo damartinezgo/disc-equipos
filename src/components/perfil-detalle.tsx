@@ -25,15 +25,15 @@ const DISC_COLOR: Record<string, string> = {
   C: '#00843D',
 }
 
-const MODULO_STYLES: Record<string, { bg: string; text: string; icon: string }> = {
-  'Orientación general de trabajo': { bg: '#F1F5F9', text: '#334155', icon: '⚪' },
-  'Toma de decisiones':             { bg: '#EFF6FF', text: '#1E40AF', icon: '🔵' },
-  'Comunicación':                   { bg: '#FFF7ED', text: '#C2410C', icon: '🟠' },
-  'Motivadores':                    { bg: '#F3E8FF', text: '#6B21A8', icon: '🟣' },
-  'Delegación':                     { bg: '#ECFDF5', text: '#047857', icon: '🟢' },
-  'Acompañamiento, seguimiento y retroalimentación': { bg: '#E0F2FE', text: '#0369A1', icon: '🩵' },
-  'Manejo de conflicto':            { bg: '#FFE4E6', text: '#BE123C', icon: '🔴' },
-  'Rol natural en el equipo':       { bg: '#EEF2FF', text: '#3730A3', icon: '🔷' },
+const MODULO_STYLES: Record<string, { bg: string; text: string }> = {
+  'Orientación general de trabajo': { bg: '#F1F5F9', text: '#334155' },
+  'Toma de decisiones':             { bg: '#EFF6FF', text: '#1E40AF' },
+  'Comunicación':                   { bg: '#FFF7ED', text: '#C2410C' },
+  'Motivadores':                    { bg: '#F3E8FF', text: '#6B21A8' },
+  'Delegación':                     { bg: '#ECFDF5', text: '#047857' },
+  'Acompañamiento, seguimiento y retroalimentación': { bg: '#E0F2FE', text: '#0369A1' },
+  'Manejo de conflicto':            { bg: '#FFE4E6', text: '#BE123C' },
+  'Rol natural en el equipo':       { bg: '#EEF2FF', text: '#3730A3' },
 }
 
 type Item = { item: number; modulo: string; categoria: string; enunciado: string; opciones: { letra: string; texto: string; disc: string }[] }
@@ -279,7 +279,7 @@ export default function PerfilDetalle({
             </p>
             <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-x-visible -mx-3 md:mx-0 px-3 md:px-0 pb-2 md:pb-0" aria-label="Modules">
               {modulosConRespuestas.map((modulo) => {
-                const style = MODULO_STYLES[modulo] ?? { icon: '📋' }
+                const style = MODULO_STYLES[modulo] ?? { bg: '#F1F5F9', text: '#334155' }
                 const isActive = activeModulo === modulo
                 return (
                   <button
@@ -291,7 +291,11 @@ export default function PerfilDetalle({
                         : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                     }`}
                   >
-                    <span className="text-sm">{style.icon}</span>
+                    <span className="text-sm">
+                      <svg className="h-4 w-4" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="6" fill={style.text} />
+                      </svg>
+                    </span>
                     <span className="truncate">{modulo}</span>
                   </button>
                 )
@@ -302,7 +306,7 @@ export default function PerfilDetalle({
           {/* Área de Contenido del Módulo */}
           {activeModulo && (() => {
             const modulo = activeModulo
-            const style = MODULO_STYLES[modulo] ?? { bg: '#F1F5F9', text: '#334155', icon: '📋' }
+            const style = MODULO_STYLES[modulo] ?? { bg: '#F1F5F9', text: '#334155' }
             const tw = MODULO_TW[modulo] ?? MODULO_TW_DEFAULT
             const itemsDelModulo = ITEMS.filter((it) => it.modulo === modulo)
             const itemsConRespuesta = itemsDelModulo.filter(
@@ -315,7 +319,9 @@ export default function PerfilDetalle({
               >
                 <div className="flex justify-between items-center mb-6">
                   <h4 className="text-md font-bold text-slate-800 flex items-center gap-2">
-                    <span>{style.icon}</span> {modulo}
+                     <svg className="h-4 w-4" viewBox="0 0 24 24">
+                       <circle cx="12" cy="12" r="6" fill={style.text} />
+                     </svg> {modulo}
                   </h4>
                   <span className="text-xs font-medium text-slate-400 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full">
                     {itemsConRespuesta.length} pregunta{itemsConRespuesta.length !== 1 ? 's' : ''}
