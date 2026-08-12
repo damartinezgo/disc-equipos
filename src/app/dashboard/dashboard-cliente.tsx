@@ -269,13 +269,13 @@ export default function DashboardCliente({
                   <th className="px-5 py-3">Nombre</th>
                   <th className="px-5 py-3 hidden sm:table-cell">Correo</th>
                   <th className="px-5 py-3 hidden sm:table-cell">Lugar</th>
-                  <th className="px-5 py-3">Equipo</th>
+                  <th className="px-5 py-3 hidden md:table-cell">Equipo</th>
                   <th className="px-5 py-3">Estado</th>
                   <th className="px-5 py-3">Perfil</th>
-                  <th className="px-5 py-3">D</th>
-                  <th className="px-5 py-3">I</th>
-                  <th className="px-5 py-3">S</th>
-                  <th className="px-5 py-3">C</th>
+                  <th className="px-5 py-3 hidden sm:table-cell">D</th>
+                  <th className="px-5 py-3 hidden sm:table-cell">I</th>
+                  <th className="px-5 py-3 hidden sm:table-cell">S</th>
+                  <th className="px-5 py-3 hidden sm:table-cell">C</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -288,10 +288,10 @@ export default function DashboardCliente({
                     <td className="px-5 py-3 text-gray-500 hidden sm:table-cell truncate max-w-[150px]">
                       {p.perfiles?.[0]?.correo || '—'}
                     </td>
-                    <td className="px-5 py-3 text-gray-500">
+                    <td className="px-5 py-3 text-gray-500 hidden sm:table-cell">
                       {p.perfiles?.[0]?.lugar || '—'}
                     </td>
-                    <td className="px-5 py-3 text-gray-500">
+                    <td className="px-5 py-3 text-gray-500 hidden md:table-cell">
                       {p.perfiles?.[0]?.equipo || '—'}
                     </td>
                     <td className="px-5 py-3">
@@ -317,16 +317,16 @@ export default function DashboardCliente({
                         <span className="text-gray-300">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 tabular-nums" style={{ color: COLOR_ESTILO.D }}>
+                    <td className="px-5 py-3 tabular-nums hidden sm:table-cell" style={{ color: COLOR_ESTILO.D }}>
                       {p.d_global ?? <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-5 py-3 tabular-nums" style={{ color: COLOR_ESTILO.I }}>
+                    <td className="px-5 py-3 tabular-nums hidden sm:table-cell" style={{ color: COLOR_ESTILO.I }}>
                       {p.i_global ?? <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-5 py-3 tabular-nums" style={{ color: COLOR_ESTILO.S }}>
+                    <td className="px-5 py-3 tabular-nums hidden sm:table-cell" style={{ color: COLOR_ESTILO.S }}>
                       {p.s_global ?? <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-5 py-3 tabular-nums" style={{ color: COLOR_ESTILO.C }}>
+                    <td className="px-5 py-3 tabular-nums hidden sm:table-cell" style={{ color: COLOR_ESTILO.C }}>
                       {p.c_global ?? <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-5 py-3 text-right">
