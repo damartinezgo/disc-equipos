@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import TerminosModal from '@/components/terminos-modal'
 
 export default function LoginPage() {
   const supabase = createClient()
@@ -31,13 +30,6 @@ export default function LoginPage() {
   const [mostrarPassword, setMostrarPassword] = useState(false)
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [mostrarTerminos, setMostrarTerminos] = useState(false)
-
-  async function confirmarTerminos() {
-    setMostrarTerminos(false)
-    await fetch('/api/perfil', { method: 'PATCH', body: JSON.stringify({ terminos_aceptados: true }) })
-    window.location.href = '/carga'
-  }
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -75,19 +67,6 @@ export default function LoginPage() {
       return
     }
 
-    // Verificar si ya aceptó términos (consultando la BD, no localStorage)
-    const { data: perfil, error: perfilError } = await supabase
-      .from('perfiles')
-      .select('terminos_aceptados')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    // Si la BD responde y aún no aceptó → mostrar modal. Si la columna no existe todavía, saltar.
-    if (!perfilError && perfil?.terminos_aceptados !== true) {
-      setMostrarTerminos(true)
-      return
-    }
-
     window.location.href = '/carga'
   }
 
@@ -121,7 +100,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="usuario@empresa.com"
-              className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
+              className="mt-1 w-full rounded-lg border border-gray-400 px-3 py-3 text-base md:text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
             />
           </div>
           <div className="relative">
@@ -133,7 +112,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Ingresa tu contraseña"
-                className="w-full rounded-lg border border-gray-400 px-3 py-3 pr-10 text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
+                className="w-full rounded-lg border border-gray-400 px-3 py-3 pr-10 text-base md:text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
               />
               <button
                 type="button"
@@ -202,13 +181,6 @@ export default function LoginPage() {
         </div>
       </div>
       </main>
-
-      {mostrarTerminos && (
-        <TerminosModal
-          onAccept={confirmarTerminos}
-          onClose={() => setMostrarTerminos(false)}
-        />
-      )}
     </>
   )
 }
