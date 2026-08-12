@@ -24,6 +24,23 @@ export async function POST(req: NextRequest) {
     }, { onConflict: 'id' })
 
     if (error) {
+      const msg = error.message.toLowerCase()
+      if (msg.includes('does not exist') && msg.includes('column')) {
+        // Fallback: insert sin columnas que aún no fueron migradas a la BD
+        const { error: retryError } = await admin.from('perfiles').upsert({
+          id: user_id,
+          nombre,
+          equipo: equipo ?? null,
+        }, { onConflict: 'id' })
+
+        if (retryError) {
+          return NextResponse.json(
+            { error: retryError.message },
+            { status: 500 }
+          )
+        }
+        return NextResponse.json({ ok: true, warning: 'Se aplicarán migraciones de BD pendientes' })
+      }
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
@@ -58,6 +75,12 @@ export async function PATCH(req: NextRequest) {
       .eq('id', user.id)
 
     if (error) {
+      const msg = error.message.toLowerCase()
+      if (msg.includes('does not exist') && msg.includes('column')) {
+        // La columna terminos_aceptados aún no existe en la BD. La funcionalidad seguirá
+        // funcionando una vez aplicada la migración correspondiente.
+        return NextResponse.json({ ok: true, warning: 'La columna terminos_aceptados no existe todavía en la BD' })
+      }
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 

@@ -1,5 +1,6 @@
--- Migration: auto-create perfiles on new auth user
--- Description: Trigger to insert a perfil row when a new user signs up
+-- Migration: fix perfil trigger to handle null nombre
+-- Description: Update handle_new_user to use 'Sin nombre' when nombre is missing,
+-- preventing 500 errors during OTP signup
 
 create or replace function public.handle_new_user()
 returns trigger
