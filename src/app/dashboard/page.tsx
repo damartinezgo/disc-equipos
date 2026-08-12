@@ -100,13 +100,6 @@ export default async function DashboardPage() {
   ) as string[]
 
   return (
-    <main className="min-h-screen bg-[#F7F8FA] px-4 py-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 rounded-xl bg-[#1F4E79]/10 px-4 py-3 text-sm text-[#1F4E79]">
-          Bienvenido al panel de Desarrollo de Líderes y Equipo. Aquí podés visualizar los resultados de tu equipo.
-        </div>
-      <DashboardCliente personas={personas} equipos={equiposUnicos} />
-    </div>
-  </main>
+    <DashboardCliente personas={personas} equipos={equiposUnicos} />
   )
 }

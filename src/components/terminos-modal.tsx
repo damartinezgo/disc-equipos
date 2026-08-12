@@ -48,7 +48,7 @@ export default function TerminosModal({
         <div className="flex items-center gap-2 border-b border-[#1F4E79]/20 bg-[#1F4E79]/10 px-6 py-3">
           <img src="/logo-rizoma.svg" alt="Logo" className="h-6 w-auto" />
           <h2 className="text-lg font-bold text-[#1F4E79]">
-            Términos y Condiciones
+            Aviso de Confidencialidad y Términos
           </h2>
         </div>
 

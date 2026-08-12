@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { User } from '@supabase/supabase-js'
 import LogoutButton from './logout-button'
 import BienvenidaModal from './bienvenida-modal'
@@ -15,6 +17,8 @@ export default function NavbarClient({
   const [dropdownAbierto, setDropdownAbierto] = useState(false)
   const [mostrarInstrucciones, setMostrarInstrucciones] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
+  const ocultarInstrucciones = pathname.includes('/gracias') || pathname.includes('/dashboard')
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -40,24 +44,28 @@ export default function NavbarClient({
       <nav suppressHydrationWarning className="sticky top-0 z-10 border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <img
-              src="/logo-rizoma.svg"
-              alt="Desarrollo de Líderes y Equipo"
-              className="h-12 w-auto"
-            />
+            <Link href="/">
+              <img
+                src="/logo-rizoma.svg"
+                alt="Desarrollo de Líderes y Equipo"
+                className="h-12 w-auto cursor-pointer"
+              />
+            </Link>
             <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
               Desarrollo de Líderes y Equipo
             </span>
           </div>
 
           <div className="relative flex items-center gap-4" ref={dropdownRef}>
-            <button
-              type="button"
-              onClick={() => setMostrarInstrucciones(true)}
-              className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              <span>Instrucciones</span>
-            </button>
+            {!ocultarInstrucciones && (
+              <button
+                type="button"
+                onClick={() => setMostrarInstrucciones(true)}
+                className="flex items-center gap-2 rounded-lg border border-[#EA580C] bg-white px-3 py-1.5 text-sm font-medium text-[#EA580C] transition hover:bg-[#FFF3EB]"
+              >
+                <span>Instrucciones</span>
+              </button>
+            )}
 
             <button
               type="button"

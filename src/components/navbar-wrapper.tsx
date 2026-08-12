@@ -13,7 +13,7 @@ export default function NavbarWrapper({
 }) {
   const pathname = usePathname()
 
-  if (pathname.startsWith('/carga') || pathname.startsWith('/login') || pathname.startsWith('/registro')) {
+  if (pathname === '/' || pathname.startsWith('/carga') || pathname.startsWith('/login') || pathname.startsWith('/registro') || pathname.includes('/gracias')) {
     return null
   }
 
