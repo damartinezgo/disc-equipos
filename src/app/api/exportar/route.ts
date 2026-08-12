@@ -119,6 +119,18 @@ export async function POST(req: NextRequest) {
 
   hoja.columns = encabezados
 
+  // Helper: column number → Excel letter (soporta AA, AB, etc.)
+  function colToLetter(col: number): string {
+    let letter = ''
+    let temp = col
+    while (temp > 0) {
+      temp--
+      letter = String.fromCharCode(65 + (temp % 26)) + letter
+      temp = Math.floor(temp / 26)
+    }
+    return letter
+  }
+
   // Estilo del encabezado
   const headerRow = hoja.getRow(1)
   headerRow.eachCell((cell) => {
@@ -161,8 +173,9 @@ export async function POST(req: NextRequest) {
   // Congelar fila de encabezados
   hoja.views = [{ state: 'frozen', ySplit: 1 }]
 
-  // Auto-filtro
-  hoja.autoFilter = { from: 'A1', to: `${String.fromCharCode(65 + encabezados.length - 1)}1` }
+  // Auto-filtro en toda la tabla de resultados
+  const lastCol = colToLetter(encabezados.length)
+  hoja.autoFilter = { from: 'A1', to: `${lastCol}1` }
 
   // ── Data bars de color para columnas D / I / S / C global ─────────────────
   const totalFilas = filas.length
@@ -197,6 +210,7 @@ color: { argb: `FF${hex}` },
   const hojaResumen = workbook.addWorksheet('Resumen por Equipo')
   hojaResumen.columns = [
     { header: 'Equipo', key: 'equipo', width: 22 },
+    { header: 'Lugar', key: 'lugar', width: 20 },
     { header: 'Total registrados', key: 'total', width: 18 },
     { header: 'Completaron', key: 'completaron', width: 13 },
     { header: '% Completado', key: 'pct', width: 14 },
@@ -236,17 +250,18 @@ color: { argb: `FF${hex}` },
     })
     const estiloFrecuente = Object.entries(conteo).sort(([, a], [, b]) => b - a)[0]?.[0] ?? '-'
 
-    const row = hojaResumen.addRow({
-      equipo,
-      total: miembros.length,
-      completaron: completaron.length,
-      pct: miembros.length ? `${Math.round((completaron.length / miembros.length) * 100)}%` : '0%',
-      d: completaron.length ? avg('d_global') : '-',
-      i: completaron.length ? avg('i_global') : '-',
-      s: completaron.length ? avg('s_global') : '-',
-      c: completaron.length ? avg('c_global') : '-',
-      estilo: estiloFrecuente,
-    })
+     const row = hojaResumen.addRow({
+       equipo,
+       lugar: lugarMap.get(miembros[0].user_id) ?? '',
+       total: miembros.length,
+       completaron: completaron.length,
+       pct: miembros.length ? `${Math.round((completaron.length / miembros.length) * 100)}%` : '0%',
+       d: completaron.length ? avg('d_global') : '-',
+       i: completaron.length ? avg('i_global') : '-',
+       s: completaron.length ? avg('s_global') : '-',
+       c: completaron.length ? avg('c_global') : '-',
+       estilo: estiloFrecuente,
+     })
     row.height = 18
 
     if (idx % 2 === 0) {
@@ -264,6 +279,7 @@ color: { argb: `FF${hex}` },
   })
 
   hojaResumen.views = [{ state: 'frozen', ySplit: 1 }]
+  hojaResumen.autoFilter = { from: 'A1', to: `${colToLetter(10)}1` }
 
   // ── Generar buffer y devolver ─────────────────────────────────────────────
   const buffer = await workbook.xlsx.writeBuffer()
