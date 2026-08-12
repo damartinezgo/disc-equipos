@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Select from "react-select";
 import TerminosModal from "@/components/terminos-modal";
+import { createClient } from '@/lib/supabase/client'
+import { Eye, EyeOff, ArrowLeft, AlertCircle } from "@/lib/icons";
 
 type Lugar = { id: number; nombre: string };
 type Equipo = { id: number; nombre: string };
@@ -55,7 +57,6 @@ export default function RegistroPage() {
   const [lugares, setLugares] = useState<Lugar[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [cargandoEquipos, setCargandoEquipos] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const codigoRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const lugarSelectId = useId();
@@ -203,29 +204,24 @@ export default function RegistroPage() {
     setCargando(true);
 
     const res = await fetch("/api/otp/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code: codigoCombinado }),
-    });
-    const result = await res.json();
+       method: "POST",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify({ email, code: codigoCombinado, purpose: "signup" }),
+     });
+     const result = await res.json();
 
-    setCargando(false);
+     setCargando(false);
 
-    if (!res.ok || !result.ok) {
-      setError(
-        result.error ||
-          result.message ||
-          "Código inválido o expirado. Verificá el código e intenta de nuevo.",
-      );
-      return;
-    }
+     if (!res.ok || !result.ok) {
+       setError(
+         result.error ||
+           result.message ||
+           "Código inválido o expirado. Verificá el código e intenta de nuevo.",
+       );
+       return;
+     }
 
-    // Store user_id for the form submission step
-    if (result.user_id) {
-      setUserId(result.user_id);
-    }
-
-    setPaso("formulario");
+     setPaso("formulario");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -252,7 +248,7 @@ export default function RegistroPage() {
       return;
     }
 
-    if (!userId) {
+    if (!email) {
       setError(
         "No se pudo identificar la sesión. Intenta de nuevo desde el inicio.",
       );
@@ -265,26 +261,37 @@ export default function RegistroPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        user_id: userId,
+        email,
         password,
         nombre,
-        email,
         lugar: lugarNombre,
         equipo,
       }),
     });
     const result = await res.json();
 
-    setCargando(false);
-
     if (!res.ok) {
+      setCargando(false);
       setError(
         result.error || "No se pudo completar el registro. Intenta de nuevo.",
       );
       return;
     }
 
-    window.location.href = "/carga";
+    const supabase = createClient()
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    setCargando(false);
+
+    if (signInError) {
+      setError('Cuenta creada, pero no se pudo iniciar sesión automáticamente. Intenta ingresar manualmente.')
+      return
+    }
+
+    router.push('/carga')
   }
 
   function confirmarTerminos() {
@@ -303,18 +310,17 @@ export default function RegistroPage() {
           className="absolute top-6 left-6 flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-500 shadow-sm ring-1 ring-gray-200 transition-colors hover:bg-gray-50 hover:text-gray-800"
           aria-label="Volver atrás"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
           <div className="mb-6 flex justify-center">
             <Link href="/">
-              <img
-                src="/logo-rizoma.svg"
-                alt="Desarrollo de Líderes y Equipo"
-                className="h-32 w-auto cursor-pointer transition-transform hover:scale-105"
-              />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-rizoma.svg"
+              alt="Desarrollo de Líderes y Equipo"
+              className="h-36 w-auto cursor-pointer transition-transform hover:scale-105"
+            />
             </Link>
           </div>
 
@@ -659,15 +665,9 @@ export default function RegistroPage() {
                       }
                     >
                       {mostrarPassword ? (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.125A7.5 7.5 0 016 12c0-1.276.312-2.46.844-3.485M9.88 9.88l4.235 4.235M9.88 9.88L6.515 6.515M15.5 12a3.5 3.5 0 11-4.95 0 3.5 3.5 0 014.95 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" />
-                        </svg>
+                        <EyeOff className="h-5 w-5" />
                       ) : (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
+                        <Eye className="h-5 w-5" />
                       )}
                     </button>
                   </div>
@@ -698,15 +698,9 @@ export default function RegistroPage() {
                       }
                     >
                       {mostrarConfirm ? (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.125A7.5 7.5 0 016 12c0-1.276.312-2.46.844-3.485M9.88 9.88l4.235 4.235M9.88 9.88L6.515 6.515M15.5 12a3.5 3.5 0 11-4.95 0 3.5 3.5 0 014.95 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" />
-                        </svg>
+                        <EyeOff className="h-5 w-5" />
                       ) : (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
+                        <Eye className="h-5 w-5" />
                       )}
                     </button>
                   </div>
@@ -763,19 +757,7 @@ export default function RegistroPage() {
               <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0">
-                    <svg
-                      className="h-6 w-6 text-red-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0018 0z"
-                      />
-                    </svg>
+                    <AlertCircle className="h-6 w-6 text-red-500" />
                   </div>
                   <p className="text-sm text-gray-700">{error}</p>
                 </div>

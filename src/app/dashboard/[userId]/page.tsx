@@ -1,5 +1,4 @@
 import { redirect, notFound } from 'next/navigation'
-import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import PerfilDetalle from '@/components/perfil-detalle'
 
@@ -14,12 +13,18 @@ export default async function DetallePersonaPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: esEncuestador } = await supabase
-    .from('encuestadores')
-    .select('user_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!esEncuestador) redirect('/encuesta')
+  // Verifica que sea encuestador o admin
+  const isAdmin = user.user_metadata?.is_admin === true
+
+  if (!isAdmin) {
+    const { data: esEncuestador } = await supabase
+      .from('encuestadores')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!esEncuestador) redirect('/encuesta')
+  }
 
   // Queries separadas (no hay FK entre scoring y perfiles)
   const adminSupabase = createServiceClient()

@@ -8,6 +8,34 @@ const SMTP_PORT = parseInt(process.env.SMTP_PORT || "587");
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
 
+async function findUserByEmail(admin: ReturnType<typeof createServiceClient>, emailLower: string) {
+  let page = 1
+  const perPage = 100
+
+  while (true) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage })
+
+    if (error) {
+      throw error
+    }
+
+    const users = data?.users ?? []
+    const found = users.find(
+      (u) => (u.email ?? '').toLowerCase() === emailLower
+    )
+
+    if (found) {
+      return found
+    }
+
+    if (users.length < perPage) {
+      return null
+    }
+
+    page += 1
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { email, purpose = "signup" } = await req.json();
@@ -20,35 +48,28 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = createServiceClient();
+    const emailLower = email.toLowerCase();
 
-    // Verify email is not already registered
-    const {
-      data: { users },
-      error: listError,
-    } = await admin.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
-    });
-
-    if (listError) {
+    let existingUser = null;
+    try {
+      existingUser = await findUserByEmail(admin, emailLower);
+    } catch (error) {
+      console.error("OTP user lookup error:", error);
       return NextResponse.json(
-        { error: "Error al verificar usuarios" },
+        { error: "Error al verificar el correo electrónico" },
         { status: 500 },
       );
     }
 
-    const emailLower = email.toLowerCase();
-    const exists = users.some((u) => u.email?.toLowerCase() === emailLower);
-
     if (purpose === "recovery") {
-      if (!exists) {
+      if (!existingUser) {
         return NextResponse.json(
           { error: "No existe una cuenta con ese correo. Registrate primero." },
           { status: 409 },
         );
       }
     } else {
-      if (exists) {
+      if (existingUser) {
         return NextResponse.json(
           { error: "Este correo ya está registrado. Intenta iniciar sesión." },
           { status: 409 },

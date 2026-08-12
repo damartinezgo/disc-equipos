@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { BarChart3, Check, Clock, Eye, ChevronLeft, ChevronRight } from '@/lib/icons'
 import GraficosDashboard from './graficos-dashboard'
 import MapaCalor from './mapa-calor'
 
@@ -21,7 +22,7 @@ const NOMBRE_ESTILO: Record<string, string> = {
 type Persona = {
   user_id: string
   completado: boolean
-  perfiles: { nombre: string; lugar: string; equipo: string; created_at: string }[]
+  perfiles: { nombre: string; lugar: string; equipo: string; created_at: string; correo: string }[]
   // Scoring — null si aún no completó
   d_global: number | null
   i_global: number | null
@@ -42,10 +43,8 @@ type Persona = {
 
 export default function DashboardCliente({
   personas,
-  equipos,
 }: {
   personas: Persona[]
-  equipos: string[]
 }) {
   const [filtroLugar, setFiltroLugar] = useState<string>('todos')
   const [filtroEquipo, setFiltroEquipo] = useState<string>('todos')
@@ -179,7 +178,7 @@ export default function DashboardCliente({
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
           >
             <option value="todos">Estilo</option>
-            {Object.entries(NOMBRE_ESTILO).map(([k, v]) => (
+            {Object.entries(NOMBRE_ESTILO).map(([k]) => (
               <option key={k} value={k}>{k}</option>
             ))}
           </select>
@@ -189,8 +188,8 @@ export default function DashboardCliente({
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
           >
             <option value="todos">Estado</option>
-            <option value="completado">✓ Completado</option>
-            <option value="pendiente">⏳ Pendiente</option>
+            <option value="completado">Completado</option>
+            <option value="pendiente">Pendiente</option>
           </select>
           <button
             onClick={() => {
@@ -234,48 +233,74 @@ export default function DashboardCliente({
         {/* Contenido */}
         {activeTab === 'graficos' ? (
           <div className="space-y-6">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <GraficosDashboard personas={conScoring as any[]} />
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <MapaCalor personas={conScoring as any[]} />
+            {conScoring.length === 0 ? (
+              <div className="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-black/5">
+                <div className="mb-4 flex justify-center">
+            <BarChart3 className="h-12 w-12 text-gray-300" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold text-gray-700">Aún no hay resultados disponibles</h3>
+                <p className="text-sm text-gray-500">
+                  Cuando alguien complete la encuesta DISC, aquí aparecerán los gráficos de distribución
+                  de estilos y el mapa de calor por categoría.
+                </p>
+                {personas.length > 0 && (
+                  <p className="mt-2 text-xs text-gray-400">
+                    {personas.filter(p => !p.completado).length} persona(s) aún no han completado la encuesta.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <GraficosDashboard personas={conScoring as any[]} />
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <MapaCalor personas={conScoring as any[]} />
+              </>
+            )}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+            <table className="w-full min-w-[760px] text-sm">
               <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
                 <tr>
-                  <th className="px-5 py-3">Nombre</th>
-                  <th className="px-5 py-3">Lugar</th>
-                  <th className="px-5 py-3">Equipo</th>
-                  <th className="px-5 py-3">Estado</th>
-                  <th className="px-5 py-3">Perfil</th>
-                  <th className="px-5 py-3">D</th>
-                  <th className="px-5 py-3">I</th>
-                  <th className="px-5 py-3">S</th>
-                  <th className="px-5 py-3">C</th>
-                  <th className="px-5 py-3" />
+                  <th className="px-4 py-3">Nombre</th>
+                  <th className="px-4 py-3">Correo</th>
+                  <th className="px-4 py-3">Lugar</th>
+                  <th className="px-4 py-3">Equipo</th>
+                  <th className="px-4 py-3">Estado</th>
+                  <th className="px-4 py-3">Perfil</th>
+                  <th className="px-3 py-3 text-right text-xs">D</th>
+                  <th className="px-3 py-3 text-right text-xs">I</th>
+                  <th className="px-3 py-3 text-right text-xs">S</th>
+                  <th className="px-3 py-3 text-right text-xs">C</th>
+                  <th className="px-3 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {paginadas.map((p) => (
                   <tr key={p.user_id} className="transition-colors hover:bg-gray-50/50">
-                    <td className="px-5 py-3 font-medium text-gray-900">
+                    <td className="px-4 py-3 font-medium text-gray-900">
                       {p.perfiles?.[0]?.nombre || 'Sin nombre'}
                     </td>
-                    <td className="px-5 py-3 text-gray-500">
+                    <td className="px-4 py-3 text-gray-500" title={p.perfiles?.[0]?.correo}>
+                      {p.perfiles?.[0]?.correo || '—'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">
                       {p.perfiles?.[0]?.lugar || '—'}
                     </td>
-                    <td className="px-5 py-3 text-gray-500">
+                    <td className="px-4 py-3 text-gray-500">
                       {p.perfiles?.[0]?.equipo || '—'}
                     </td>
                     <td className="px-5 py-3">
                       {p.completado ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-                          ✓ Completado
+                          <Check className="h-3 w-3 flex-shrink-0" />
+                          Completado
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700">
-                          ⏳ Pendiente
+                          <Clock className="h-3 w-3 flex-shrink-0" />
+                          Pendiente
                         </span>
                       )}
                     </td>
@@ -291,16 +316,16 @@ export default function DashboardCliente({
                         <span className="text-gray-300">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 tabular-nums" style={{ color: COLOR_ESTILO.D }}>
+                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.D }}>
                       {p.d_global ?? <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-5 py-3 tabular-nums" style={{ color: COLOR_ESTILO.I }}>
+                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.I }}>
                       {p.i_global ?? <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-5 py-3 tabular-nums" style={{ color: COLOR_ESTILO.S }}>
+                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.S }}>
                       {p.s_global ?? <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-5 py-3 tabular-nums" style={{ color: COLOR_ESTILO.C }}>
+                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.C }}>
                       {p.c_global ?? <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-5 py-3 text-right">
@@ -310,28 +335,24 @@ export default function DashboardCliente({
                           className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-[#1F4E79]"
                           title="Ver detalle"
                         >
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
+                          <Eye className="h-5 w-5" />
                         </Link>
                       ) : (
                         <span className="inline-flex h-8 w-8 items-center justify-center text-gray-200" title="Sin resultado">
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
+                          <Eye className="h-5 w-5" />
                         </span>
                       )}
                     </td>
                   </tr>
                 ))}
                 {paginadas.length === 0 && (
-                  <tr>
-                    <td colSpan={10} className="px-5 py-10 text-center text-gray-400">
-                      Nadie coincide con este filtro todavía.
-                    </td>
-                  </tr>
+                <tr>
+                  <td colSpan={11} className="px-5 py-10 text-center text-gray-400">
+                    {personas.length === 0
+                      ? 'Aún no hay usuarios registrados.'
+                      : 'Nadie coincide con este filtro todavía.'}
+                  </td>
+                </tr>
                 )}
               </tbody>
             </table>
@@ -357,9 +378,7 @@ export default function DashboardCliente({
                         className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="sr-only">Anterior</span>
-                        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
-                        </svg>
+                <ChevronLeft className="h-5 w-5" />
                       </button>
                       <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
                         {paginaActual} de {totalPaginas}
@@ -370,9 +389,7 @@ export default function DashboardCliente({
                         className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="sr-only">Siguiente</span>
-                        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                        </svg>
+                <ChevronRight className="h-5 w-5" />
                       </button>
                     </nav>
                   </div>

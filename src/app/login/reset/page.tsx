@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { Eye, EyeOff, ArrowLeft, AlertCircle } from '@/lib/icons'
 
 export default function ResetPage() {
   const supabase = createClient()
@@ -95,13 +96,12 @@ export default function ResetPage() {
           href="/login"
           className="absolute top-6 left-6 flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <ArrowLeft className="w-4 h-4" />
           Volver al inicio
         </Link>
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
           <div className="mb-6 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-rizoma.svg" alt="Desarrollo de Líderes y Equipo" className="h-14 w-auto" />
           </div>
 
@@ -139,13 +139,9 @@ export default function ResetPage() {
                       aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     >
                       {mostrarPassword ? (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.125A7.5 7.5 0 016 12c0-1.276.312-2.46.844-3.485M9.88 9.88l4.235 4.235M9.88 9.88L6.515 6.515M15.5 12a3.5 3.5 0 11-4.95 0 3.5 3.5 0 014.95 0z" />
-                        </svg>
+<EyeOff className="h-5 w-5" />
                       ) : (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.06 12C3.13 8.66 6.31 6 12 6c1.51 0 2.91.32 4.12.91M12 18c-1.11 0-2.1-.18-3.02-.47M9.88 5.06L6.52 8.42m9.06 9.06 3.4 3.4M12 15a3 3 0 100-6 3 3 0 000 6z" />
-                        </svg>
+<Eye className="h-5 w-5" />
                       )}
                     </button>
                   </div>
@@ -170,13 +166,9 @@ export default function ResetPage() {
                       aria-label={mostrarConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     >
                       {mostrarConfirm ? (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.125A7.5 7.5 0 016 12c0-1.276.312-2.46.844-3.485M9.88 9.88l4.235 4.235M9.88 9.88L6.515 6.515M15.5 12a3.5 3.5 0 11-4.95 0 3.5 3.5 0 014.95 0z" />
-                        </svg>
+<EyeOff className="h-5 w-5" />
                       ) : (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.06 12C3.13 8.66 6.31 6 12 6c1.51 0 2.91.32 4.12.91M12 18c-1.11 0-2.1-.18-3.02-.47M9.88 5.06L6.52 8.42m9.06 9.06 3.4 3.4M12 15a3 3 0 100-6 3 3 0 000 6z" />
-                        </svg>
+<Eye className="h-5 w-5" />
                       )}
                     </button>
                   </div>
@@ -187,9 +179,7 @@ export default function ResetPage() {
                     <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0">
-                          <svg className="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0018 0z" />
-                          </svg>
+                          <AlertCircle className="h-6 w-6 text-red-500" />
                         </div>
                         <p className="text-sm text-gray-700">{error}</p>
                       </div>
