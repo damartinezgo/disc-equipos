@@ -24,3 +24,16 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Evita el zoom automático en inputs en móviles (iOS/Safari, Chrome móvil) */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
