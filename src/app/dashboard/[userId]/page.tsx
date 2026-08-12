@@ -1,5 +1,4 @@
 import { redirect, notFound } from 'next/navigation'
-import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import PerfilDetalle from '@/components/perfil-detalle'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
+import { X } from '@/lib/icons'
 
 export default function TerminosModal({
   onAccept,
@@ -47,6 +47,7 @@ export default function TerminosModal({
         </button>
 
         <div className="flex items-center gap-2 border-b border-[#1F4E79]/20 bg-[#1F4E79]/10 px-6 py-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-rizoma.svg" alt="Logo" className="h-8 w-auto" />
           <h2 className="text-lg font-bold text-[#1F4E79]">
             Aviso de Confidencialidad y Términos

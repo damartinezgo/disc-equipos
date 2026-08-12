@@ -8,13 +8,11 @@ const TIEMPO_MINIMO = 3000
 
 export default function CargaPage() {
   const [visible, setVisible] = useState(true)
-  const [redirigiendo, setRedirigiendo] = useState(false)
 
   const router = useRouter()
 
   async function handleRedirect() {
     setVisible(false)
-    setRedirigiendo(true)
 
     const redirect = typeof window !== 'undefined'
       ? sessionStorage.getItem('redirect_after_login')
@@ -69,9 +67,6 @@ export default function CargaPage() {
 
   useEffect(() => {
     const startTime = Date.now()
-    const visto = typeof window !== 'undefined'
-      ? localStorage.getItem('instrucciones_vista') === 'true'
-      : false
 
     let ejecutado = false
 
@@ -108,6 +103,7 @@ export default function CargaPage() {
         document.removeEventListener('visibilitychange', onVisibility)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
 
@@ -116,6 +112,7 @@ export default function CargaPage() {
       {visible && (
         <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-[#F7F8FA] to-white">
           <div className="flex flex-col items-center" suppressHydrationWarning>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo-rizoma.svg"
               alt="Rizoma Logo"

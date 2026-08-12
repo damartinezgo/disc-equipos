@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient, createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   try {
@@ -68,16 +68,6 @@ export async function POST(req: NextRequest) {
         }
         return NextResponse.json({ error: updateError.message }, { status: 400 })
       }
-    }
-
-    const supabase = await createClient()
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (signInError) {
-      console.error('Sign-in error:', signInError.message)
     }
 
     const { error: upsertError } = await admin

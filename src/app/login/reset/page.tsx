@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Eye, EyeOff, ArrowLeft, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft, AlertCircle } from '@/lib/icons'
 
 export default function ResetPage() {
   const supabase = createClient()
@@ -101,6 +101,7 @@ export default function ResetPage() {
         </Link>
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
           <div className="mb-6 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-rizoma.svg" alt="Desarrollo de Líderes y Equipo" className="h-14 w-auto" />
           </div>
 

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle } from '@/lib/icons'
 import BienvenidaModal from '@/components/bienvenida-modal'
 import itemsData from '@/data/items-disc.json'
 
@@ -184,13 +184,14 @@ export default function EncuestaPage() {
       localStorage.clear()
       sessionStorage.clear()
     }
-    window.location.href = '/login'
+    router.push('/login')
   }
 
   if (cargandoInicial) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-[#F7F8FA] to-white">
         <div className="flex flex-col items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-rizoma.svg" alt="Rizoma Logo" className="mb-8 h-24 w-auto" />
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#1F4E79] border-t-transparent" />
           <p className="mt-4 text-sm text-gray-500">Preparando tu experiencia…</p>

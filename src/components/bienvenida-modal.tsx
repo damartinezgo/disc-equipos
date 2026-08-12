@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
+import { X } from '@/lib/icons'
 
 export default function BienvenidaModal({
   onAccept,
@@ -45,6 +45,7 @@ export default function BienvenidaModal({
         </button>
 
         <div className="relative flex items-center justify-center border-b border-gray-200 bg-[#1F4E79]/10 px-6 py-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-rizoma.svg" alt="Logo" className="absolute left-6 h-8 w-auto" />
           <h2 className="text-lg font-bold text-[#1F4E79]">Instrucciones DISC</h2>
         </div>
@@ -69,7 +70,8 @@ export default function BienvenidaModal({
             </p>
           </div>
           <div className="w-full md:w-1/2 flex items-center justify-center p-6 bg-gray-50 border-l border-gray-100">
-            <img src="/pantalla-carga.png" alt="Modelo DISC" className="max-w-full h-auto rounded-xl shadow-sm object-contain" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/pantalla-carga.png" alt="Modelo DISC" className="max-w-full h-auto rounded-xl shadow-sm object-contain" />
           </div>
         </div>
 

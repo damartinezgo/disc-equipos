@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Select from "react-select";
 import TerminosModal from "@/components/terminos-modal";
-import { Eye, EyeOff, ArrowLeft, AlertCircle } from "lucide-react";
+import { createClient } from '@/lib/supabase/client'
+import { Eye, EyeOff, ArrowLeft, AlertCircle } from "@/lib/icons";
 
 type Lugar = { id: number; nombre: string };
 type Equipo = { id: number; nombre: string };
@@ -269,16 +270,28 @@ export default function RegistroPage() {
     });
     const result = await res.json();
 
-    setCargando(false);
-
     if (!res.ok) {
+      setCargando(false);
       setError(
         result.error || "No se pudo completar el registro. Intenta de nuevo.",
       );
       return;
     }
 
-    window.location.href = "/carga";
+    const supabase = createClient()
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    setCargando(false);
+
+    if (signInError) {
+      setError('Cuenta creada, pero no se pudo iniciar sesión automáticamente. Intenta ingresar manualmente.')
+      return
+    }
+
+    router.push('/carga')
   }
 
   function confirmarTerminos() {
@@ -302,11 +315,12 @@ export default function RegistroPage() {
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
           <div className="mb-6 flex justify-center">
             <Link href="/">
-              <img
-                src="/logo-rizoma.svg"
-                alt="Desarrollo de Líderes y Equipo"
-                className="h-36 w-auto cursor-pointer transition-transform hover:scale-105"
-              />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-rizoma.svg"
+              alt="Desarrollo de Líderes y Equipo"
+              className="h-36 w-auto cursor-pointer transition-transform hover:scale-105"
+            />
             </Link>
           </div>
 

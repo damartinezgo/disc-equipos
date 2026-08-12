@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function GraciasContent() {
+  const router = useRouter()
   async function handleSalir() {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -11,7 +13,7 @@ export default function GraciasContent() {
       localStorage.clear()
       sessionStorage.clear()
     }
-    window.location.href = '/'
+    router.push('/')
   }
 
   return (
@@ -19,11 +21,12 @@ export default function GraciasContent() {
       <div className="w-full max-w-lg rounded-2xl border border-[#E2E8F0] bg-white px-10 py-12 text-center shadow-lg">
         {/* Logo dentro de la tarjeta */}
         <Link href="/">
-          <img
-            src="/logo-rizoma.svg"
-            alt="Desarrollo de Líderes y Equipo"
-            className="mx-auto mb-8 h-18 w-auto cursor-pointer"
-          />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo-rizoma.svg"
+          alt="Desarrollo de Líderes y Equipo"
+          className="mx-auto mb-8 h-18 w-auto cursor-pointer"
+        />
         </Link>
 
         {/* Título principal */}

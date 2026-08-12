@@ -115,11 +115,7 @@ export default async function DashboardPage() {
     }
   })
 
-  const equiposUnicos = Array.from(
-    new Set((perfilesData ?? []).filter((p) => !adminIds.has(p.id)).map((p) => p.equipo).filter(Boolean))
-  ) as string[]
-
   return (
-    <DashboardCliente personas={personas} equipos={equiposUnicos} />
+    <DashboardCliente personas={personas} />
   )
 }

@@ -50,27 +50,36 @@ export async function POST(req: NextRequest) {
     }
 
     if (purpose === 'recovery') {
-      let userId: string | null = null
-
       let page = 1
       const perPage = 100
-      while (true) {
-        const { data: listData } = await admin.auth.admin.listUsers({
-          page,
-          perPage,
-        })
-        const users = listData?.users ?? []
+      let userId: string | null = null
 
+      while (true) {
+        const { data, error } = await admin.auth.admin.listUsers({ page, perPage })
+
+        if (error) {
+          console.error('OTP recovery user lookup error:', error)
+          return NextResponse.json(
+            { error: 'Error al verificar el correo electrónico' },
+            { status: 500 }
+          )
+        }
+
+        const users = data?.users ?? []
         const match = users.find(
-          (u: { email?: string }) =>
-            u.email?.toLowerCase() === email.toLowerCase()
+          (u) => (u.email ?? '').toLowerCase() === email.toLowerCase()
         )
+
         if (match) {
           userId = match.id
           break
         }
-        if (users.length < perPage) break
-        page++
+
+        if (users.length < perPage) {
+          break
+        }
+
+        page += 1
       }
 
       if (!userId) {

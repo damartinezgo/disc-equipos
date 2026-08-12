@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, AlertCircle, CheckCircle } from "@/lib/icons";
 
 export default function RecuperarPage() {
   type Paso = "email" | "codigo" | "password";
 
+  const router = useRouter();
   const [paso, setPaso] = useState<Paso>("email");
   const [email, setEmail] = useState("");
   const [codigoBoxes, setCodigoBoxes] = useState<string[]>([
@@ -230,11 +232,12 @@ export default function RecuperarPage() {
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
           <div className="mb-6 flex justify-center">
             <Link href="/">
-              <img
-                src="/logo-rizoma.svg"
-                alt="Desarrollo de Líderes y Equipo"
-                className="h-24 w-auto cursor-pointer transition-transform hover:scale-105"
-              />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-rizoma.svg"
+              alt="Desarrollo de Líderes y Equipo"
+              className="h-24 w-auto cursor-pointer transition-transform hover:scale-105"
+            />
             </Link>
           </div>
 
@@ -545,7 +548,7 @@ export default function RecuperarPage() {
                 </div>
                 <div className="mt-4 flex justify-end">
                   <button
-                    onClick={() => (window.location.href = "/login")}
+                    onClick={() => router.push("/login")}
                     className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C]"
                   >
                     Ir a iniciar sesión

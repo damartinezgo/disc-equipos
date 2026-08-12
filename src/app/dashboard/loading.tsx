@@ -2,6 +2,7 @@ export default function DashboardLoading() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-[#F7F8FA] to-white">
       <div className="flex flex-col items-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/logo-rizoma.svg"
           alt="Rizoma Logo"

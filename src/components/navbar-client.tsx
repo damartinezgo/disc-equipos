@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
-import { X, AlertCircle } from 'lucide-react'
+import { X, AlertCircle } from '@/lib/icons'
 import LogoutButton from './logout-button'
 import BienvenidaModal from './bienvenida-modal'
 
@@ -22,6 +22,7 @@ export default function NavbarClient({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
+  const router = useRouter()
   const ocultarInstrucciones = pathname.includes('/gracias') || pathname.includes('/dashboard')
 
   useEffect(() => {
@@ -59,12 +60,11 @@ export default function NavbarClient({
   async function handleLogoutConfirmado() {
     setMostrarLogoutConfirm(false)
     setSaliendo(true)
+    sessionStorage.setItem('just_logout', 'true')
     const supabase = createClient()
     await supabase.auth.signOut()
     localStorage.clear()
-    sessionStorage.clear()
-    sessionStorage.setItem('just_logout', 'true')
-    window.location.href = '/login'
+    router.push('/login')
   }
 
   function getInitials(nombre?: string) {
@@ -87,11 +87,12 @@ export default function NavbarClient({
               className="cursor-pointer focus:outline-none"
               aria-label="Cerrar sesión"
             >
-              <img
-                src="/logo-rizoma.svg"
-                alt="Desarrollo de Líderes y Equipo"
-                className="h-20 w-auto cursor-pointer transition-transform hover:scale-105"
-              />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-rizoma.svg"
+              alt="Desarrollo de Líderes y Equipo"
+              className="h-14 w-auto cursor-pointer transition-transform hover:scale-105"
+            />
             </button>
             <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
               Desarrollo de Líderes y Equipo
@@ -148,7 +149,7 @@ export default function NavbarClient({
       )}
 
       {mostrarLogoutConfirm && (
-        <div className="fixed inset-0 z-[9999] flex min-h-screen min-w-screen items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-9999 flex min-h-screen min-w-screen items-center justify-center bg-black/50 p-4">
           <div
             ref={modalRef}
             className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
@@ -162,7 +163,7 @@ export default function NavbarClient({
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
               <AlertCircle className="h-7 w-7 text-[#C00000]" />
               </div>
               <h2 className="text-lg font-bold text-[#1F2937]">

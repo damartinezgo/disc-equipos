@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Eye, EyeOff, ArrowLeft, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft, AlertCircle } from '@/lib/icons'
 
 export default function LoginPage() {
   const supabase = createClient()
@@ -88,7 +88,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
         <div className="mb-6 flex justify-center">
           <Link href="/">
-            <img src="/logo-rizoma.svg" alt="Desarrollo de Líderes y Equipo" className="h-24 w-auto cursor-pointer transition-transform hover:scale-105" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-rizoma.svg" alt="Desarrollo de Líderes y Equipo" className="h-24 w-auto cursor-pointer transition-transform hover:scale-105" />
           </Link>
         </div>
         <h1 className="text-2xl font-semibold text-[#1F2937]">Iniciar sesión</h1>
@@ -140,7 +141,7 @@ export default function LoginPage() {
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
               <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
             <AlertCircle className="h-6 w-6 text-red-500" />
                   </div>
                   <p className="text-sm text-gray-700">{error}</p>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle } from '@/lib/icons'
 
 export default function SessionManager() {
   const supabase = createClient()
@@ -18,6 +18,7 @@ export default function SessionManager() {
       async (event, session) => {
            if (event === 'SIGNED_OUT' && !session) {
           if (sessionStorage.getItem('just_logout')) {
+            sessionStorage.removeItem('just_logout')
             return
           }
           const saved = sessionStorage.getItem('redirect_after_login')
@@ -52,7 +53,7 @@ export default function SessionManager() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
               <AlertCircle className="h-6 w-6 text-[#EA580C]" />
           </div>
           <div>

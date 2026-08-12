@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { BarChart3, Check, Clock, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
+import { BarChart3, Check, Clock, Eye, ChevronLeft, ChevronRight } from '@/lib/icons'
 import GraficosDashboard from './graficos-dashboard'
 import MapaCalor from './mapa-calor'
 
@@ -43,10 +43,8 @@ type Persona = {
 
 export default function DashboardCliente({
   personas,
-  equipos,
 }: {
   personas: Persona[]
-  equipos: string[]
 }) {
   const [filtroLugar, setFiltroLugar] = useState<string>('todos')
   const [filtroEquipo, setFiltroEquipo] = useState<string>('todos')
@@ -180,7 +178,7 @@ export default function DashboardCliente({
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
           >
             <option value="todos">Estilo</option>
-            {Object.entries(NOMBRE_ESTILO).map(([k, v]) => (
+            {Object.entries(NOMBRE_ESTILO).map(([k]) => (
               <option key={k} value={k}>{k}</option>
             ))}
           </select>
