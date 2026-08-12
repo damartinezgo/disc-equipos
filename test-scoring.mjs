@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
-import itemsData from '@/data/items-disc.json'
+import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
 
-// Rangos máximos por categoría (ver 06_Reglas_Puntaje del Excel)
-const MAXIMOS: Record<string, number> = {
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const itemsData = JSON.parse(fs.readFileSync('src/data/items-disc.json', 'utf8'));
+
+const MAXIMOS = {
   global: 32,
   perfil_trabajo: 8,
   motivacion: 4,
@@ -11,14 +12,14 @@ const MAXIMOS: Record<string, number> = {
   dinamica_equipo: 8,
 }
 
-function calcularNivel(puntajeDominante: number, maximo: number): string {
+function calcularNivel(puntajeDominante, maximo) {
   const porcentaje = puntajeDominante / maximo
   if (porcentaje >= 0.5) return 'Alto'
   if (porcentaje >= 0.15) return 'Medio'
   return 'Mixto/Neutro'
 }
 
-function dominanteYSecundario(d: number, i: number, s: number, c: number) {
+function dominanteYSecundario(d, i, s, c) {
   const puntajes = [
     { estilo: 'D', valor: d },
     { estilo: 'I', valor: i },
@@ -33,33 +34,22 @@ function dominanteYSecundario(d: number, i: number, s: number, c: number) {
   }
 }
 
-export async function POST() {
-  const supabase = await createClient()
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    console.error('AUTH ERROR:', authError)
-    return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
-  }
-
-  const adminSupabase = createServiceClient()
-
-  // 1. Obtener las respuestas del usuario usando adminSupabase
-  const { data: respuestasData, error: respError } = await adminSupabase
+async function run() {
+  const { data: users } = await supabase.auth.admin.listUsers();
+  const uid = users.users[0]?.id;
+  
+  const { data: respuestasData, error: respError } = await supabase
     .from('respuestas')
     .select('respuestas_mas, respuestas_menos')
-    .eq('user_id', user.id)
+    .eq('user_id', uid)
     .single()
 
-  if (respError || !respuestasData) {
-    console.error('RESP ERROR:', respError)
-    return NextResponse.json({ error: 'No se encontraron respuestas para el usuario' }, { status: 500 })
-  }
+  console.log('Resp error:', respError);
+  if (!respuestasData) return;
 
-  const mas = respuestasData.respuestas_mas as Record<string, string> || {}
-  const menos = respuestasData.respuestas_menos as Record<string, string> || {}
+  const mas = respuestasData.respuestas_mas || {}
+  const menos = respuestasData.respuestas_menos || {}
 
-  // 2. Calcular puntajes base (+1 por mas, -1 por menos)
   const scores = {
     d_global: 0, i_global: 0, s_global: 0, c_global: 0,
     perfil_trabajo_d: 0, perfil_trabajo_i: 0, perfil_trabajo_s: 0, perfil_trabajo_c: 0,
@@ -68,43 +58,42 @@ export async function POST() {
     dinamica_equipo_d: 0, dinamica_equipo_i: 0, dinamica_equipo_s: 0, dinamica_equipo_c: 0,
   }
 
-  const categoryMap: Record<string, string> = {
+  const categoryMap = {
     'Perfil de trabajo': 'perfil_trabajo',
     'Motivación y compromiso': 'motivacion',
     'Gestión directa del jefe': 'gestion_jefe',
     'Dinámica de equipo': 'dinamica_equipo'
   }
 
-  itemsData.forEach((item: any) => {
+  itemsData.forEach((item) => {
     const itemId = item.item.toString()
     const catPrefix = categoryMap[item.categoria]
     
     const letraMas = mas[itemId]
     if (letraMas) {
-      const opcion = item.opciones.find((o: any) => o.letra === letraMas)
+      const opcion = item.opciones.find((o) => o.letra === letraMas)
       if (opcion) {
-        const disc = opcion.disc.toLowerCase() // "d", "i", "s", "c"
-        scores[`${disc}_global` as keyof typeof scores] += 1
+        const disc = opcion.disc.toLowerCase() 
+        scores[`${disc}_global`] += 1
         if (catPrefix) {
-          scores[`${catPrefix}_${disc}` as keyof typeof scores] += 1
+          scores[`${catPrefix}_${disc}`] += 1
         }
       }
     }
 
     const letraMenos = menos[itemId]
     if (letraMenos) {
-      const opcion = item.opciones.find((o: any) => o.letra === letraMenos)
+      const opcion = item.opciones.find((o) => o.letra === letraMenos)
       if (opcion) {
         const disc = opcion.disc.toLowerCase()
-        scores[`${disc}_global` as keyof typeof scores] -= 1
+        scores[`${disc}_global`] -= 1
         if (catPrefix) {
-          scores[`${catPrefix}_${disc}` as keyof typeof scores] -= 1
+          scores[`${catPrefix}_${disc}`] -= 1
         }
       }
     }
   })
 
-  // 3. Derivar estilos y perfiles
   const global = dominanteYSecundario(scores.d_global, scores.i_global, scores.s_global, scores.c_global)
   const perfilTrabajo = dominanteYSecundario(scores.perfil_trabajo_d, scores.perfil_trabajo_i, scores.perfil_trabajo_s, scores.perfil_trabajo_c)
   const motivacion = dominanteYSecundario(scores.motivacion_d, scores.motivacion_i, scores.motivacion_s, scores.motivacion_c)
@@ -113,9 +102,8 @@ export async function POST() {
 
   const perfilCombinado = `${global.dominante}/${global.secundario}`
 
-  // 4. Guardar todo de una sola vez en Supabase usando adminSupabase
   const finalScoringData = {
-    user_id: user.id,
+    user_id: uid,
     ...scores,
     estilo_principal: global.dominante,
     estilo_secundario: global.secundario,
@@ -141,14 +129,10 @@ export async function POST() {
     calculado_en: new Date().toISOString()
   }
 
-  const { error: upsertError } = await adminSupabase
+  const { error: upsertError } = await supabase
     .from('scoring')
     .upsert(finalScoringData, { onConflict: 'user_id' })
 
-  if (upsertError) {
-    console.error('UPSERT ERROR:', upsertError)
-    return NextResponse.json({ error: upsertError.message }, { status: 500 })
-  }
-
-  return NextResponse.json({ ok: true, perfilCombinado })
+  console.log('UPSERT ERROR:', upsertError);
 }
+run();

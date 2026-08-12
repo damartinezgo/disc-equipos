@@ -1,33 +1,10 @@
 "use client";
 
-import { useState, useEffect, useId, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Select from "react-select";
-import TerminosModal from "@/components/terminos-modal";
 
-type Lugar = { id: number; nombre: string };
-type Equipo = { id: number; nombre: string };
-type Paso = "email" | "codigo" | "formulario";
-
-export default function RegistroPage() {
-  const router = useRouter();
-
-  function handleBack() {
-    if (paso === "formulario") {
-      setPaso("codigo");
-      return;
-    }
-    if (paso === "codigo") {
-      setPaso("email");
-      return;
-    }
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/");
-    }
-  }
+export default function RecuperarPage() {
+  type Paso = "email" | "codigo" | "password";
 
   const [paso, setPaso] = useState<Paso>("email");
   const [email, setEmail] = useState("");
@@ -39,47 +16,29 @@ export default function RegistroPage() {
     "",
     "",
   ]);
-  const [segundosReenvio, setSegundosReenvio] = useState(0);
-  const [nombre, setNombre] = useState("");
-  const [lugarId, setLugarId] = useState("");
-  const [equipo, setEquipo] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirm, setMostrarConfirm] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [reenviando, setReenviando] = useState(false);
+  const [segundosReenvio, setSegundosReenvio] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [acepto, setAcepto] = useState(false);
-  const [mostrarTerminos, setMostrarTerminos] = useState(false);
-  const [lugares, setLugares] = useState<Lugar[]>([]);
-  const [equipos, setEquipos] = useState<Equipo[]>([]);
-  const [cargandoEquipos, setCargandoEquipos] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [exito, setExito] = useState(false);
   const codigoRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const lugarSelectId = useId();
-  const equipoSelectId = useId();
+  function validarEmail(email: string) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedEmail = sessionStorage.getItem("login_email");
+      const saved = sessionStorage.getItem("login_email");
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (savedEmail) setEmail(savedEmail);
+      if (saved) setEmail(saved);
     }
-  }, []);
-
-  useEffect(() => {
-    async function cargarLugares() {
-      try {
-        const res = await fetch("/api/lugares");
-        const data = await res.json();
-        setLugares(Array.isArray(data) ? data : []);
-      } catch {
-        // error silencioso
-      }
-    }
-    cargarLugares();
   }, []);
 
   useEffect(() => {
@@ -87,30 +46,6 @@ export default function RegistroPage() {
       sessionStorage.setItem("login_email", email);
     }
   }, [email]);
-
-  useEffect(() => {
-    async function cargarEquipos() {
-      if (!lugarId) {
-        setEquipos([]);
-        return;
-      }
-      setCargandoEquipos(true);
-      try {
-        const res = await fetch(`/api/equipos?lugar_id=${lugarId}`);
-        const data = await res.json();
-        setEquipos(Array.isArray(data) ? data : []);
-      } catch {
-        // error silencioso
-      } finally {
-        setCargandoEquipos(false);
-      }
-      setEquipo("");
-    }
-    cargarEquipos();
-  }, [lugarId]);
-
-  const lugarNombre =
-    lugares.find((l) => String(l.id) === lugarId)?.nombre ?? "";
 
   useEffect(() => {
     if (segundosReenvio > 0) {
@@ -121,11 +56,6 @@ export default function RegistroPage() {
       return () => clearTimeout(timer);
     }
   }, [segundosReenvio]);
-
-  function validarEmail(email: string) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
 
   async function enviarCodigo(e: React.FormEvent) {
     e.preventDefault();
@@ -138,30 +68,39 @@ export default function RegistroPage() {
 
     setCargando(true);
 
-    const res = await fetch("/api/otp/send", {
+    // Validar que el correo existe en el sistema
+    const checkRes = await fetch("/api/auth/check-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
+    });
+    const { exists } = await checkRes.json();
+
+    if (!exists) {
+      setCargando(false);
+      setError("No existe una cuenta con ese correo. Registrate primero.");
+      return;
+    }
+
+    // Enviar código de 6 dígitos vía API personalizada
+    const res = await fetch("/api/otp/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, purpose: "recovery" }),
     });
     const result = await res.json();
 
     setCargando(false);
 
     if (!res.ok) {
-      if (result.error?.includes("registrado")) {
-        setError("Este correo ya está registrado. Intenta iniciar sesión.");
-      } else if (
-        result.error?.includes("rate") ||
-        result.error?.includes("límite")
-      ) {
-        setError(
-          "Ya enviamos un código recientemente. Por favor esperá antes de reenviar.",
-        );
-      } else {
-        setError(
-          result.error || "No se pudo enviar el código. Intenta de nuevo.",
-        );
+      if (result.error?.includes("rate") || result.error?.includes("límite")) {
+        setSegundosReenvio(60);
+        setPaso("codigo");
+        return;
       }
+      setError(
+        result.error || "No se pudo enviar el código. Intenta de nuevo.",
+      );
       return;
     }
 
@@ -177,17 +116,22 @@ export default function RegistroPage() {
     const res = await fetch("/api/otp/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, purpose: "recovery" }),
     });
     const result = await res.json();
 
     setReenviando(false);
 
     if (!res.ok) {
+      if (result.error?.includes("rate") || result.error?.includes("límite")) {
+        setSegundosReenvio(60);
+        return;
+      }
       setError(result.error || "No se pudo reenviar el código.");
-    } else {
-      setSegundosReenvio(60);
+      return;
     }
+
+    setSegundosReenvio(60);
   }
 
   async function verificarCodigo(e: React.FormEvent) {
@@ -214,33 +158,21 @@ export default function RegistroPage() {
     if (!res.ok || !result.ok) {
       setError(
         result.error ||
-          result.message ||
           "Código inválido o expirado. Verificá el código e intenta de nuevo.",
       );
       return;
     }
 
-    // Store user_id for the form submission step
     if (result.user_id) {
       setUserId(result.user_id);
     }
 
-    setPaso("formulario");
+    setPaso("password");
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function resetPassword(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    if (!lugarId || !equipo) {
-      setError("Selecciona un lugar y una dependencia.");
-      return;
-    }
-
-    if (!acepto) {
-      setError("Debes aceptar los términos y condiciones.");
-      return;
-    }
 
     if (password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
@@ -252,26 +184,12 @@ export default function RegistroPage() {
       return;
     }
 
-    if (!userId) {
-      setError(
-        "No se pudo identificar la sesión. Intenta de nuevo desde el inicio.",
-      );
-      return;
-    }
-
     setCargando(true);
 
-    const res = await fetch("/api/auth/register", {
+    const res = await fetch("/api/auth/reset-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: userId,
-        password,
-        nombre,
-        email,
-        lugar: lugarNombre,
-        equipo,
-      }),
+      body: JSON.stringify({ user_id: userId, password }),
     });
     const result = await res.json();
 
@@ -279,17 +197,12 @@ export default function RegistroPage() {
 
     if (!res.ok) {
       setError(
-        result.error || "No se pudo completar el registro. Intenta de nuevo.",
+        result.error || "No se pudo cambiar la contraseña. Intenta de nuevo.",
       );
       return;
     }
 
-    window.location.href = "/carga";
-  }
-
-  function confirmarTerminos() {
-    setAcepto(true);
-    setMostrarTerminos(false);
+    setExito(true);
   }
 
   return (
@@ -298,12 +211,20 @@ export default function RegistroPage() {
         suppressHydrationWarning
         className="relative flex min-h-screen items-center justify-center bg-[#F7F8FA] px-4"
       >
-        <button
-          onClick={handleBack}
+        <Link
+          href={paso === "email" ? "/login" : "#"}
+          onClick={
+            paso !== "email"
+              ? (e) => {
+                  e.preventDefault();
+                  setPaso((p) => (p === "password" ? "codigo" : "email"));
+                }
+              : undefined
+          }
           className="absolute top-6 left-6 flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800"
         >
-          ← Volver atrás
-        </button>
+          {paso === "email" ? "← Volver al inicio" : "← Atrás"}
+        </Link>
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
           <div className="mb-6 flex justify-center">
             <img
@@ -313,6 +234,7 @@ export default function RegistroPage() {
             />
           </div>
 
+          {/* Step indicator */}
           <div className="mb-6 flex items-center justify-center gap-1.5">
             <div
               className={`h-2 w-8 rounded-full ${paso === "email" ? "bg-[#1F4E79]" : "bg-gray-200"}`}
@@ -321,18 +243,19 @@ export default function RegistroPage() {
               className={`h-2 w-8 rounded-full ${paso === "codigo" ? "bg-[#1F4E79]" : "bg-gray-200"}`}
             />
             <div
-              className={`h-2 w-8 rounded-full ${paso === "formulario" ? "bg-[#1F4E79]" : "bg-gray-200"}`}
+              className={`h-2 w-8 rounded-full ${paso === "password" ? "bg-[#1F4E79]" : "bg-gray-200"}`}
             />
           </div>
 
+          {/* Step 1: Email */}
           {paso === "email" && (
             <>
               <h1 className="text-2xl font-semibold text-[#1F2937]">
-                Crear cuenta
+                Recuperar contraseña
               </h1>
               <p className="mt-1 text-sm text-gray-500">
-                Ingresa tu correo. Te enviaremos un código de verificación para
-                confirmar la cuenta.
+                Ingresa tu correo y te enviaremos un código de 6 dígitos para
+                restablecer tu contraseña.
               </p>
 
               <form onSubmit={enviarCodigo} className="mt-6 space-y-4">
@@ -355,16 +278,17 @@ export default function RegistroPage() {
                   disabled={cargando || !email}
                   className="w-full rounded-lg bg-[#1F4E79] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {cargando ? "Enviando…" : "Enviar código de verificación"}
+                  {cargando ? "Enviando…" : "Enviar código"}
                 </button>
               </form>
             </>
           )}
 
+          {/* Step 2: Code */}
           {paso === "codigo" && (
             <>
               <h1 className="text-2xl font-semibold text-[#1F2937]">
-                Verificar correo
+                Verificar código
               </h1>
               <p className="mt-1 text-sm text-gray-500">
                 Ingresa el código de 6 dígitos que enviamos a{" "}
@@ -373,13 +297,14 @@ export default function RegistroPage() {
 
               <form onSubmit={verificarCodigo} className="mt-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-center text-sm font-medium text-gray-700">
                     Código de verificación
                   </label>
                   <div className="mt-1 flex items-center justify-center gap-2">
                     {codigoBoxes.map((digit, idx) => (
                       <input
                         key={idx}
+                        id={`codigo-${idx}`}
                         type="text"
                         inputMode="numeric"
                         maxLength={1}
@@ -445,7 +370,6 @@ export default function RegistroPage() {
                         ref={(el) => {
                           codigoRefs.current[idx] = el;
                         }}
-                        id={`codigo-${idx}`}
                         className="h-12 w-10 rounded-lg border border-gray-300 text-center text-xl font-medium text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
                       />
                     ))}
@@ -476,159 +400,20 @@ export default function RegistroPage() {
             </>
           )}
 
-          {paso === "formulario" && (
+          {/* Step 3: New password */}
+          {paso === "password" && (
             <>
               <h1 className="text-2xl font-semibold text-[#1F2937]">
-                Crear cuenta
+                Nueva contraseña
               </h1>
               <p className="mt-1 text-sm text-gray-500">
-                Completa tus datos para terminar el registro.
+                Ingresa tu nueva contraseña. Debe tener al menos 8 caracteres.
               </p>
 
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <form onSubmit={resetPassword} className="mt-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Nombre completo
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
-                    placeholder="Ej. Juan Pérez"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Lugar
-                  </label>
-                  <Select
-                    required
-                    instanceId={lugarSelectId}
-                    value={
-                      lugarId
-                        ? {
-                            value: lugarId,
-                            label:
-                              lugares.find((l) => String(l.id) === lugarId)
-                                ?.nombre ?? "",
-                          }
-                        : null
-                    }
-                    onChange={(opt) => {
-                      setLugarId(opt ? opt.value : "");
-                      setEquipo("");
-                    }}
-                    options={lugares.map((l) => ({
-                      value: String(l.id),
-                      label: l.nombre,
-                    }))}
-                    placeholder="Selecciona un lugar"
-                    classNames={{
-                      control: () => "border-gray-300 text-black",
-                      menu: () => "z-50",
-                      option: ({ isFocused }) =>
-                        isFocused
-                          ? "bg-[#1F4E79]/10 cursor-pointer"
-                          : "cursor-pointer",
-                    }}
-                    styles={{
-                      control: (base) => ({
-                        ...base,
-                        minHeight: "42px",
-                        borderColor: "#d1d5db",
-                        borderRadius: "0.5rem",
-                        backgroundColor: "white",
-                        "&:hover": { borderColor: "#9ca3af" },
-                      }),
-                      menu: (base) => ({ ...base, zIndex: 50 }),
-                      option: (base, { isFocused }) => ({
-                        ...base,
-                        color: "#111827",
-                        backgroundColor: isFocused
-                          ? "rgba(31, 78, 121, 0.1)"
-                          : undefined,
-                        cursor: "pointer",
-                      }),
-                      singleValue: (base) => ({ ...base, color: "#111827" }),
-                      placeholder: (base) => ({ ...base, color: "#6b7280" }),
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Dependencia
-                  </label>
-                  <Select
-                    required
-                    instanceId={equipoSelectId}
-                    isDisabled={!lugarId || cargandoEquipos}
-                    value={equipo ? { value: equipo, label: equipo } : null}
-                    onChange={(opt) => setEquipo(opt ? opt.value : "")}
-                    options={equipos.map((e) => ({
-                      value: e.nombre,
-                      label: e.nombre,
-                    }))}
-                    placeholder={
-                      cargandoEquipos
-                        ? "Cargando..."
-                        : !lugarId
-                          ? "Selecciona un lugar"
-                          : "Selecciona o escribe una dependencia"
-                    }
-                    classNames={{
-                      control: () => "border-gray-300 text-black",
-                      menu: () => "z-50",
-                      option: ({ isFocused }) =>
-                        isFocused
-                          ? "bg-[#1F4E79]/10 cursor-pointer"
-                          : "cursor-pointer",
-                    }}
-                    styles={{
-                      control: (base) => ({
-                        ...base,
-                        minHeight: "42px",
-                        borderColor: "#d1d5db",
-                        borderRadius: "0.5rem",
-                        backgroundColor: "white",
-                        "&:hover": { borderColor: "#9ca3af" },
-                      }),
-                      menu: (base) => ({ ...base, zIndex: 50 }),
-                      option: (base, { isFocused }) => ({
-                        ...base,
-                        color: "#111827",
-                        backgroundColor: isFocused
-                          ? "rgba(31, 78, 121, 0.1)"
-                          : undefined,
-                        cursor: "pointer",
-                      }),
-                      singleValue: (base) => ({ ...base, color: "#111827" }),
-                      placeholder: (base) => ({ ...base, color: "#6b7280" }),
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Correo
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
-                    placeholder="tu@correo.com"
-                    readOnly
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Contraseña
+                    Nueva contraseña
                   </label>
                   <div className="relative">
                     <input
@@ -740,51 +525,18 @@ export default function RegistroPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={acepto}
-                      onChange={(e) => {
-                        setAcepto(e.target.checked);
-                      }}
-                      className="h-4 w-4 rounded border-gray-300 text-[#1F4E79] focus:ring-[#1F4E79]"
-                    />
-                    Acepto los
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setMostrarTerminos(true)}
-                    className="text-sm font-medium text-[#1F4E79] underline underline-offset-2 hover:text-[#173A5C]"
-                  >
-                    Términos y condiciones
-                  </button>
-                </div>
-
                 <button
                   type="submit"
-                  disabled={cargando || !lugarId || !equipo || !acepto}
+                  disabled={cargando}
                   className="w-full rounded-lg bg-[#1F4E79] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {cargando ? "Creando cuenta…" : "Crear cuenta y comenzar"}
+                  {cargando ? "Cambiando…" : "Cambiar contraseña"}
                 </button>
               </form>
             </>
           )}
 
-          {paso !== "formulario" && (
-            <p className="mt-6 text-center text-sm text-gray-500">
-              ¿Ya tienes cuenta?{" "}
-              <Link
-                href="/login"
-                className="font-medium text-[#1F4E79] hover:underline"
-              >
-                Inicia sesión
-              </Link>
-            </p>
-          )}
-
-          {error && (
+          {error && paso !== "password" && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
               <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
                 <div className="flex items-start gap-3">
@@ -816,15 +568,56 @@ export default function RegistroPage() {
               </div>
             </div>
           )}
+
+          {paso === "email" && (
+            <p className="mt-6 text-center text-sm text-gray-500">
+              ¿Ya tienes cuenta?{" "}
+              <Link
+                href="/login"
+                className="font-medium text-[#1F4E79] hover:underline"
+              >
+                Inicia sesión
+              </Link>
+            </p>
+          )}
+
+          {exito && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-6 w-6 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m5.618-4.016A11.967 11.967 0 0110 20a12 12 0 110-24 12 12 0 012.618 19.994z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-700">
+                    Tu contraseña se ha restablecido correctamente. Ya puedes
+                    iniciar sesión con tu nueva contraseña.
+                  </p>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => (window.location.href = "/login")}
+                    className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C]"
+                  >
+                    Ir a iniciar sesión
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
-
-      {mostrarTerminos && (
-        <TerminosModal
-          onAccept={confirmarTerminos}
-          onClose={() => setMostrarTerminos(false)}
-        />
-      )}
     </>
   );
 }
