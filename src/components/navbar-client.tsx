@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
+import { X, AlertCircle } from 'lucide-react'
 import LogoutButton from './logout-button'
 import BienvenidaModal from './bienvenida-modal'
 
@@ -128,7 +129,7 @@ export default function NavbarClient({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <LogoutButton />
+                  <LogoutButton user={user} />
                 </div>
               </div>
             )}
@@ -157,22 +158,22 @@ export default function NavbarClient({
               onClick={() => setMostrarLogoutConfirm(false)}
               className="absolute top-3 right-3 z-10 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="h-5 w-5" />
             </button>
 
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
-                <svg className="h-7 w-7 text-[#C00000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0018 0z" />
-                </svg>
+              <AlertCircle className="h-7 w-7 text-[#C00000]" />
               </div>
-              <h2 className="text-lg font-bold text-[#1F2937]">¿Estás seguro?</h2>
+              <h2 className="text-lg font-bold text-[#1F2937]">
+                {user.user_metadata?.is_admin ? '¿Cerrar sesión?' : '¿Estás seguro?'}
+              </h2>
             </div>
 
             <p className="mt-4 text-sm text-gray-600">
-              Recuerda que si cierras sesión, el avance se guarda correctamente. Podrás retomar desde donde lo dejaste la próxima vez.
+              {user.user_metadata?.is_admin
+                ? 'Perderás el acceso a esta sesión. Deberás iniciar sesión nuevamente para continuar.'
+                : 'Recuerda que si cierras sesión, el avance de tu encuesta se guarda correctamente. Podrás retomar desde donde lo dejaste la próxima vez.'}
             </p>
 
             <div className="mt-6 flex justify-end gap-3">

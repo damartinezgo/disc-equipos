@@ -7,5 +7,9 @@ export default async function GraciasPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  if (user.user_metadata?.is_admin === true) {
+    redirect('/dashboard')
+  }
+
   return <GraciasContent />
 }

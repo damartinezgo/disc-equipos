@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { BarChart3, Check, Clock, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import GraficosDashboard from './graficos-dashboard'
 import MapaCalor from './mapa-calor'
 
@@ -237,9 +238,7 @@ export default function DashboardCliente({
             {conScoring.length === 0 ? (
               <div className="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-black/5">
                 <div className="mb-4 flex justify-center">
-                  <svg className="h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h3m-3 4h3m2 5.29V5.29a2 2 0 00-2.16-1.95l-5.5-1A2 2 0 003 3v7m18 0v7a2 2 0 01-2 2h-5.25M9 7v1M9 11v1m3-1v1m-3 5v1m3-1v1" />
-                  </svg>
+            <BarChart3 className="h-12 w-12 text-gray-300" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold text-gray-700">Aún no hay resultados disponibles</h3>
                 <p className="text-sm text-gray-500">
@@ -297,17 +296,12 @@ export default function DashboardCliente({
                     <td className="px-5 py-3">
                       {p.completado ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-                          <svg className="h-3 w-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
+                          <Check className="h-3 w-3 flex-shrink-0" />
                           Completado
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700">
-                          <svg className="h-3 w-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <circle cx="12" cy="12" r="9" strokeWidth={2} />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7v5l3 3" />
-                          </svg>
+                          <Clock className="h-3 w-3 flex-shrink-0" />
                           Pendiente
                         </span>
                       )}
@@ -343,17 +337,11 @@ export default function DashboardCliente({
                           className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-[#1F4E79]"
                           title="Ver detalle"
                         >
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
+                          <Eye className="h-5 w-5" />
                         </Link>
                       ) : (
                         <span className="inline-flex h-8 w-8 items-center justify-center text-gray-200" title="Sin resultado">
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
+                          <Eye className="h-5 w-5" />
                         </span>
                       )}
                     </td>
@@ -392,9 +380,7 @@ export default function DashboardCliente({
                         className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="sr-only">Anterior</span>
-                        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
-                        </svg>
+                <ChevronLeft className="h-5 w-5" />
                       </button>
                       <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
                         {paginaActual} de {totalPaginas}
@@ -405,9 +391,7 @@ export default function DashboardCliente({
                         className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="sr-only">Siguiente</span>
-                        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                        </svg>
+                <ChevronRight className="h-5 w-5" />
                       </button>
                     </nav>
                   </div>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
 import NavbarWrapper from "@/components/navbar-wrapper";
+import SessionManager from "@/components/session-manager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -98,6 +99,7 @@ export default async function RootLayout({
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <div suppressHydrationWarning>
           {user && <NavbarWrapper user={user} nombre={nombre} />}
+          <SessionManager />
           {children}
         </div>
       </body>

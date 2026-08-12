@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { createLucideIcon, ArrowLeft, LucideIcon } from 'lucide-react'
 import GraficoDisc from '@/app/dashboard/[userId]/grafico-disc'
 import itemsData from '@/data/items-disc.json'
 
@@ -48,6 +49,14 @@ const MODULO_ICONOS: Record<string, string> = {
   'Rol natural en el equipo':                  'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
 }
 
+const ModuloIconos: Record<string, LucideIcon> = Object.fromEntries(
+  Object.entries(MODULO_ICONOS).map(([key, path]) => [
+    key,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createLucideIcon(key, { name: key, path, iconType: 'stroke' } as any),
+  ])
+)
+
 type Item = { item: number; modulo: string; categoria: string; enunciado: string; opciones: { letra: string; texto: string; disc: string }[] }
 const ITEMS = itemsData as Item[]
 
@@ -71,6 +80,11 @@ type Scoring = Record<string, any>
 type Rubrica = Record<string, any>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TextoPerfil = Record<string, any> | null
+
+const ModuloIcon = ({ modulo, className }: { modulo: string; className?: string }) => {
+  const Icon = ModuloIconos[modulo] || ModuloIconos['Orientación general de trabajo']
+  return <Icon className={className} />
+}
 
 export default function PerfilDetalle({
   nombre,
@@ -133,9 +147,7 @@ export default function PerfilDetalle({
               className="inline-flex items-center justify-center w-8 h-8 text-slate-500 hover:text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors shadow-sm shrink-0"
               title="Volver al dashboard"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+              <ArrowLeft className="w-4 h-4" />
             </Link>
             <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-lg shrink-0">
               {getIniciales(nombre)}
@@ -316,11 +328,9 @@ export default function PerfilDetalle({
                         : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                     }`}
                   >
-                     <span className="text-sm flex items-center justify-center" style={{ color: style.text }}>
-                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                         <path strokeLinecap="round" strokeLinejoin="round" d={MODULO_ICONOS[modulo] || MODULO_ICONOS['Orientación general de trabajo']} />
-                       </svg>
-                     </span>
+                        <span className="text-sm flex items-center justify-center" style={{ color: style.text }}>
+                          <ModuloIcon modulo={modulo} className="h-4 w-4" />
+                        </span>
                     <span className="truncate">{modulo}</span>
                   </button>
                 )
@@ -344,9 +354,7 @@ export default function PerfilDetalle({
               >
                 <div className="flex justify-between items-center mb-6">
                   <h4 className="text-md font-bold text-slate-800 flex items-center gap-2">
-                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                       <path strokeLinecap="round" strokeLinejoin="round" d={MODULO_ICONOS[modulo] || MODULO_ICONOS['Orientación general de trabajo']} />
-                     </svg> <span style={{ color: style.text }}>{modulo}</span>
+                   <ModuloIcon modulo={modulo} className="h-4 w-4" /> <span style={{ color: style.text }}>{modulo}</span>
                   </h4>
                   <span className="text-xs font-medium text-slate-400 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full">
                     {itemsConRespuesta.length} pregunta{itemsConRespuesta.length !== 1 ? 's' : ''}
