@@ -285,7 +285,7 @@ export default function DashboardCliente({
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {p.perfiles?.[0]?.nombre || 'Sin nombre'}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 truncate max-w-[140px]">
+                    <td className="px-4 py-3 text-gray-500" title={p.perfiles?.[0]?.correo}>
                       {p.perfiles?.[0]?.correo || '—'}
                     </td>
                     <td className="px-4 py-3 text-gray-500">
