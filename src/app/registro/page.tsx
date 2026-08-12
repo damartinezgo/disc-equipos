@@ -55,7 +55,6 @@ export default function RegistroPage() {
   const [lugares, setLugares] = useState<Lugar[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [cargandoEquipos, setCargandoEquipos] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const codigoRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const lugarSelectId = useId();
@@ -203,29 +202,24 @@ export default function RegistroPage() {
     setCargando(true);
 
     const res = await fetch("/api/otp/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code: codigoCombinado }),
-    });
-    const result = await res.json();
+       method: "POST",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify({ email, code: codigoCombinado, purpose: "signup" }),
+     });
+     const result = await res.json();
 
-    setCargando(false);
+     setCargando(false);
 
-    if (!res.ok || !result.ok) {
-      setError(
-        result.error ||
-          result.message ||
-          "Código inválido o expirado. Verificá el código e intenta de nuevo.",
-      );
-      return;
-    }
+     if (!res.ok || !result.ok) {
+       setError(
+         result.error ||
+           result.message ||
+           "Código inválido o expirado. Verificá el código e intenta de nuevo.",
+       );
+       return;
+     }
 
-    // Store user_id for the form submission step
-    if (result.user_id) {
-      setUserId(result.user_id);
-    }
-
-    setPaso("formulario");
+     setPaso("formulario");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -252,7 +246,7 @@ export default function RegistroPage() {
       return;
     }
 
-    if (!userId) {
+    if (!email) {
       setError(
         "No se pudo identificar la sesión. Intenta de nuevo desde el inicio.",
       );
@@ -265,10 +259,9 @@ export default function RegistroPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        user_id: userId,
+        email,
         password,
         nombre,
-        email,
         lugar: lugarNombre,
         equipo,
       }),

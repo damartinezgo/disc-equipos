@@ -149,7 +149,7 @@ export default function RecuperarPage() {
     const res = await fetch("/api/otp/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code: codigoCombinado }),
+      body: JSON.stringify({ email, code: codigoCombinado, purpose: "recovery" }),
     });
     const result = await res.json();
 
