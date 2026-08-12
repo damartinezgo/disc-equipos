@@ -3,7 +3,22 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import BienvenidaModal from '@/components/bienvenida-modal'
 import itemsData from '@/data/items-disc.json'
+
+const getBadgeStyles = (modulo: string) => {
+  const styles: Record<string, string> = {
+    'Orientación general de trabajo': 'bg-[#F1F5F9] text-[#334155]',
+    'Toma de decisiones': 'bg-[#EFF6FF] text-[#1E40AF]',
+    'Comunicación': 'bg-[#FFF7ED] text-[#C2410C]',
+    'Motivadores': 'bg-[#F3E8FF] text-[#6B21A8]',
+    'Delegación': 'bg-[#ECFDF5] text-[#047857]',
+    'Acompañamiento, seguimiento y retroalimentación': 'bg-[#E0F2FE] text-[#0369A1]',
+    'Manejo de conflicto': 'bg-[#FFE4E6] text-[#BE123C]',
+    'Rol natural en el equipo': 'bg-[#EEF2FF] text-[#3730A3]',
+  }
+  return styles[modulo] || 'bg-[#FFF3EB] text-[#C2410C]'
+}
 
 type Opcion = { letra: string; texto: string; disc: string }
 type Item = { item: number; modulo: string; categoria: string; enunciado: string; opciones: Opcion[] }
@@ -23,6 +38,7 @@ export default function EncuestaPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [mostrarModalProgreso, setMostrarModalProgreso] = useState(false)
   const [mostrarConfirmacionCierre, setMostrarConfirmacionCierre] = useState(false)
+  const [mostrarInstrucciones, setMostrarInstrucciones] = useState(false)
 
   // Cargar progreso existente (por si cerró el navegador a mitad de la encuesta)
   useEffect(() => {
@@ -55,13 +71,24 @@ export default function EncuestaPage() {
         setRespuestasMenos(data.respuestas_menos || {})
         const respondidas = Object.keys(data.respuestas_mas || {}).length + Object.keys(data.respuestas_menos || {}).length
         if (respondidas > 0) {
+          // Usuario que regresa con progreso: solo mostrar modal de progreso
           setMostrarModalProgreso(true)
         }
         const primeraSinResponder = ITEMS.findIndex(
           (it) => !(data.respuestas_mas?.[it.item] && data.respuestas_menos?.[it.item])
         )
         setIndice(primeraSinResponder === -1 ? 0 : primeraSinResponder)
+      } else {
+        // Usuario nuevo sin respuestas: mostrar instrucciones si no las ha visto
+        const visto = typeof window !== 'undefined'
+          ? localStorage.getItem('instrucciones_vista') === 'true'
+          : false
+
+        if (!visto) {
+          setMostrarInstrucciones(true)
+        }
       }
+
       setCargandoInicial(false)
     }
     cargar()
@@ -155,9 +182,13 @@ export default function EncuestaPage() {
 
   if (cargandoInicial) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <img src="/pantalla-carga.png" alt="Cargando…" className="h-auto max-h-screen w-auto" />
-      </div>
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-[#F7F8FA] to-white">
+        <div className="flex flex-col items-center">
+          <img src="/logo-rizoma.svg" alt="Rizoma Logo" className="mb-8 h-20 w-auto" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#1F4E79] border-t-transparent" />
+          <p className="mt-4 text-sm text-gray-500">Preparando tu experiencia…</p>
+        </div>
+      </main>
     )
   }
 
@@ -173,27 +204,29 @@ export default function EncuestaPage() {
         <div className="mb-8">
           <div className="mb-2 flex justify-between text-xs font-medium text-gray-500">
             <span>Pregunta {indice + 1} de {TOTAL}</span>
-            <span>{progreso}%</span>
+            <span className="font-bold text-[#EA580C]">{progreso}%</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
             <div
-              className="h-full rounded-full bg-[#1F4E79] transition-all duration-300"
+              className="h-full rounded-full bg-[#EA580C] transition-all duration-300"
               style={{ width: `${progreso}%` }}
             />
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-[#1F4E79]">
-            {itemActual.modulo}
-          </p>
+        <div className="rounded-2xl border-t-[3px] border-t-[#EA580C] bg-white p-8 shadow-sm ring-1 ring-black/5">
+          <div className="mb-4">
+            <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${getBadgeStyles(itemActual.modulo)}`}>
+              {itemActual.modulo}
+            </span>
+          </div>
           <h2 className="mb-6 text-xl font-semibold text-[#1F2937]">{itemActual.enunciado}</h2>
 
           <div className="space-y-3">
-             <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 pb-2 text-xs font-medium text-gray-400">
+             <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4 pb-2 text-xs font-bold text-gray-500 pr-2">
                <span />
-               <span className="text-center text-[#00843D]">MÁS me describe</span>
-               <span className="text-center text-[#C00000]">MENOS me describe</span>
+               <span className="text-center text-[#00843D] w-6">MÁS</span>
+               <span className="text-center text-[#C00000] w-6">MENOS</span>
              </div>
 
              {itemActual.opciones.map((op) => (
@@ -236,7 +269,7 @@ export default function EncuestaPage() {
             </p>
           )}
 
-          <div className="mt-8 flex justify-end gap-3">
+          <div className="mt-8 flex items-center justify-between">
             <button
               type="button"
               onClick={anterior}
@@ -245,15 +278,17 @@ export default function EncuestaPage() {
             >
               ← Anterior
             </button>
-            {guardando && <span className="text-xs text-[#1F4E79]">Guardando…</span>}
-            <button
-              type="button"
-              onClick={siguiente}
-              disabled={!puedeAvanzar}
-              className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:bg-gray-300"
-            >
-              {indice === TOTAL - 1 ? 'Finalizar' : 'Siguiente →'}
-            </button>
+            <div className="flex items-center gap-3">
+              {guardando && <span className="text-xs text-[#1F4E79]">Guardando…</span>}
+              <button
+                type="button"
+                onClick={siguiente}
+                disabled={!puedeAvanzar}
+                className="rounded-lg bg-[#1F4E79] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:cursor-not-allowed disabled:bg-gray-300"
+              >
+                {indice === TOTAL - 1 ? 'Finalizar' : 'Siguiente →'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -316,6 +351,21 @@ export default function EncuestaPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {mostrarInstrucciones && (
+        <BienvenidaModal
+          onAccept={async () => {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('instrucciones_vista', 'true')
+            }
+            if (userId) {
+              await supabase.from('respuestas').upsert({ user_id: userId }, { onConflict: 'user_id', ignoreDuplicates: true })
+            }
+            setMostrarInstrucciones(false)
+          }}
+          onClose={() => setMostrarInstrucciones(false)}
+        />
       )}
     </>
   )

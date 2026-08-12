@@ -1,15 +1,16 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import BienvenidaModal from '@/components/bienvenida-modal'
 
 const TIEMPO_MINIMO = 3000
 
 export default function CargaPage() {
   const [visible, setVisible] = useState(true)
-  const [mostrarInstrucciones, setMostrarInstrucciones] = useState(false)
   const [redirigiendo, setRedirigiendo] = useState(false)
+
+  const router = useRouter()
 
   async function handleRedirect() {
     setVisible(false)
@@ -21,7 +22,7 @@ export default function CargaPage() {
 
     if (redirect) {
       sessionStorage.removeItem('redirect_after_login')
-      window.location.href = redirect
+      router.push(redirect)
       return
     }
 
@@ -37,7 +38,7 @@ export default function CargaPage() {
     if (!user) {
       localStorage.clear()
       sessionStorage.clear()
-      window.location.href = '/login'
+      router.push('/login')
       return
     }
 
@@ -49,14 +50,14 @@ export default function CargaPage() {
         .maybeSingle()
 
       if (esEncuestador) {
-        window.location.href = '/dashboard'
+        router.push('/dashboard')
         return
       }
     } catch {
       // fallback to encuesta
     }
 
-    window.location.href = '/encuesta'
+    router.push('/encuesta')
   }
 
   useEffect(() => {
@@ -70,12 +71,6 @@ export default function CargaPage() {
     function proceed() {
       if (ejecutado) return
       ejecutado = true
-
-      if (!visto) {
-        setVisible(false)
-        setMostrarInstrucciones(true)
-        return
-      }
 
       void handleRedirect()
     }
@@ -108,57 +103,22 @@ export default function CargaPage() {
     }
   }, [])
 
-  function handleSaltar() {
-    void handleRedirect()
-  }
-
-  function acceptarInstrucciones() {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('instrucciones_vista', 'true')
-    }
-    setMostrarInstrucciones(false)
-    void handleRedirect()
-  }
 
   return (
     <>
       {visible && (
         <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-[#F7F8FA] to-white">
-          <div className="relative flex flex-col items-center" suppressHydrationWarning>
+          <div className="flex flex-col items-center" suppressHydrationWarning>
             <img
-              src="/pantalla-carga.png"
-              alt="Cargando…"
-              className="h-auto max-h-[70vh] w-auto"
+              src="/logo-rizoma.svg"
+              alt="Rizoma Logo"
+              className="mb-8 h-20 w-auto"
               suppressHydrationWarning
             />
-            <div className="absolute bottom-[-60px] flex flex-col items-center" suppressHydrationWarning>
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#1F4E79] border-t-transparent" suppressHydrationWarning />
-              <p className="mt-4 text-sm text-gray-500">Preparando tu experiencia…</p>
-              <button
-                onClick={handleSaltar}
-                className="mt-4 text-xs font-medium text-gray-400 underline underline-offset-1 hover:text-gray-600"
-              >
-                Saltar
-              </button>
-            </div>
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#1F4E79] border-t-transparent" suppressHydrationWarning />
+            <p className="mt-4 text-sm text-gray-500">Preparando tu experiencia…</p>
           </div>
         </main>
-      )}
-
-      {redirigiendo && !visible && !mostrarInstrucciones && (
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-[#F7F8FA] to-white">
-          <div className="flex flex-col items-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#1F4E79] border-t-transparent" />
-            <p className="mt-4 text-sm text-gray-500">Redirigiendo…</p>
-          </div>
-        </div>
-      )}
-
-      {mostrarInstrucciones && (
-        <BienvenidaModal
-          onAccept={acceptarInstrucciones}
-          onClose={() => setMostrarInstrucciones(false)}
-        />
       )}
     </>
   )

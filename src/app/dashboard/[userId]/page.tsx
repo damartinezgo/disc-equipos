@@ -58,15 +58,15 @@ export default async function DetallePersonaPage({
     .eq('perfil', scoring.perfil_combinado)
     .maybeSingle()
 
+  const { data: respuestasData } = await adminSupabase
+    .from('respuestas')
+    .select('respuestas_mas, respuestas_menos')
+    .eq('user_id', userId)
+    .maybeSingle()
+
   return (
-    <main className="relative min-h-screen bg-[#F7F8FA] px-4 py-8">
-      <Link
-        href="/dashboard"
-        className="absolute top-6 left-6 flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800"
-      >
-        ← Volver al dashboard
-      </Link>
-      <div className="mx-auto max-w-4xl pt-10">
+    <main className="min-h-screen bg-[#F7F8FA] px-4 py-8 flex flex-col">
+      <div className="mx-auto max-w-6xl w-full flex-1">
         <PerfilDetalle
            nombre={scoringConPerfil.perfiles[0].nombre}
            lugar={scoringConPerfil.perfiles[0].lugar}
@@ -74,6 +74,8 @@ export default async function DetallePersonaPage({
           scoring={scoring}
           rubrica={rubrica ?? []}
           textoPerfil={textoPerfil ?? null}
+          respuestasMas={respuestasData?.respuestas_mas ?? null}
+          respuestasMenos={respuestasData?.respuestas_menos ?? null}
         />
       </div>
     </main>
