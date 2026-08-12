@@ -135,6 +135,8 @@ export async function POST(req: NextRequest) {
         subject,
         html: htmlContent,
       });
+    } else {
+      console.log(`\n=========================================\n[LOCAL DEV] Código OTP generado para ${email}: ${code}\n=========================================\n`);
     }
 
     return NextResponse.json({ ok: true, message: "Código enviado" });

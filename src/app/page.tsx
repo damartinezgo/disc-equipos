@@ -59,13 +59,40 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Columna Derecha - Imagen limpia sobre el fondo */}
-        <div className="flex flex-1 items-center justify-center">
-          <img
-            src="/pantalla-carga.png"
-            alt="Modelo DISC"
-            className="h-auto max-h-[460px] w-full max-w-md object-contain"
-          />
+        {/* Contenedor del Lado Derecho */}
+        <div className="relative flex flex-1 items-center justify-center lg:justify-end">
+          
+          {/* 1. Fondo difuminado (Glow ambiental) */}
+          <div className="absolute -inset-4 bg-gradient-to-r from-orange-200/60 via-blue-200/50 to-purple-200/60 rounded-3xl blur-3xl opacity-70 -z-10"></div>
+
+          {/* 2. Tarjeta contenedora de la Imagen */}
+          <div className="relative bg-white p-3 md:p-4 rounded-3xl border border-slate-200/80 shadow-2xl max-w-lg w-full">
+            
+            {/* Badge Flotante Superior */}
+            <div className="absolute -top-3 -left-3 bg-white border border-slate-200/80 shadow-md px-3 py-1.5 rounded-full flex items-center gap-2 z-10">
+              <span className="w-2 h-2 rounded-full bg-[#EA580C] animate-pulse"></span>
+              <span className="text-xs font-bold text-slate-700">Metodología DISC 7.0</span>
+            </div>
+
+            {/* Imagen integrada */}
+            <div className="overflow-hidden rounded-2xl bg-slate-50 border border-slate-100">
+              <img 
+                src="/pantalla-carga.png" 
+                alt="Evaluación DISC Rizoma" 
+                className="w-full h-auto object-cover"
+              />
+            </div>
+
+            {/* Badge Flotante Inferior */}
+            <div className="absolute -bottom-4 -right-3 bg-slate-900 text-white shadow-xl px-4 py-2 rounded-2xl flex items-center gap-2 z-10">
+              <span className="text-base">📊</span>
+              <div className="text-left">
+                <p className="text-[10px] text-slate-400 leading-none">Resultados</p>
+                <p className="text-xs font-bold leading-tight">Instantáneos y Precisos</p>
+              </div>
+            </div>
+
+          </div>
         </div>
       </main>
 
