@@ -54,6 +54,11 @@ export default async function DashboardPage() {
       .map((u) => u.id)
   )
 
+  // Mapa de emails para mostrar fallback cuando nombre es "Sin nombre"
+  const emailMap = new Map(
+    authUsers.map((u) => [u.id, u.email ?? ''])
+  )
+
   // Mapa de lugares desde user_metadata (columna lugar puede no existir en perfiles)
   const lugarMap = new Map(
     authUsers.map((u) => [u.id, u.user_metadata?.lugar ?? u.user_metadata?.lugar_id ?? ''])
@@ -72,11 +77,14 @@ export default async function DashboardPage() {
   const personas = (perfilesData ?? [])
     .filter((p) => !adminIds.has(p.id))
     .map((p) => {
-    const scoring = scoringMap.get(p.id)
-    const completado = respuestasMap.get(p.id) ?? false
-    return {
-      user_id: p.id,
-      perfiles: [{ nombre: p.nombre, lugar: lugarMap.get(p.id) ?? '', equipo: p.equipo ?? '', created_at: p.created_at }],
+      const scoring = scoringMap.get(p.id)
+      const completado = respuestasMap.get(p.id) ?? false
+      const nombre = p.nombre && p.nombre !== 'Sin nombre'
+        ? p.nombre
+        : (emailMap.get(p.id) ?? '')
+      return {
+        user_id: p.id,
+        perfiles: [{ nombre, lugar: lugarMap.get(p.id) ?? '', equipo: p.equipo ?? '', created_at: p.created_at }],
       completado,
       // Scoring (null si no completó)
       d_global: scoring?.d_global ?? null,
