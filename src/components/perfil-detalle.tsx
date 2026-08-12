@@ -80,6 +80,16 @@ export default function PerfilDetalle({
   const [mainTab, setMainTab] = useState<'vision' | 'recomendaciones' | 'respuestas'>('vision')
   const [selectedModulo, setSelectedModulo] = useState<string | null>(null)
 
+  function getIniciales(nombre: string): string {
+    return nombre
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
   // Group items by modulo, preserving order
   const modulosOrdenados = Array.from(new Set(ITEMS.map((it) => it.modulo)))
 
@@ -113,7 +123,7 @@ export default function PerfilDetalle({
               </svg>
             </Link>
             <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-lg shrink-0">
-              {nombre.slice(0, 2).toUpperCase()}
+              {getIniciales(nombre)}
             </div>
             <div>
               <div className="flex items-center gap-2">
