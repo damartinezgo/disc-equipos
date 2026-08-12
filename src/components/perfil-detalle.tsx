@@ -65,8 +65,11 @@ const MODULO_TW: Record<string, { borderLeft: string; badge: string; cardBg: str
 const MODULO_TW_DEFAULT = { borderLeft: 'border-l-slate-400', badge: 'bg-slate-100 text-slate-700', cardBg: 'bg-slate-50', cardBorder: 'border-slate-100' }
 
 // Tipos mínimos (ajusta si generas tipos desde Supabase con `supabase gen types`)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Scoring = Record<string, any>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Rubrica = Record<string, any>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TextoPerfil = Record<string, any> | null
 
 export default function PerfilDetalle({
