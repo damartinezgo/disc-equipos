@@ -22,7 +22,7 @@ export default function GraciasContent() {
           <img
             src="/logo-rizoma.svg"
             alt="Desarrollo de Líderes y Equipo"
-            className="mx-auto mb-8 h-14 w-auto cursor-pointer"
+            className="mx-auto mb-8 h-18 w-auto cursor-pointer"
           />
         </Link>
 

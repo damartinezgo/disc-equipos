@@ -112,7 +112,7 @@ export default function CargaPage() {
             <img
               src="/logo-rizoma.svg"
               alt="Rizoma Logo"
-              className="mb-8 h-20 w-auto"
+              className="mb-8 h-24 w-auto"
               suppressHydrationWarning
             />
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#1F4E79] border-t-transparent" suppressHydrationWarning />

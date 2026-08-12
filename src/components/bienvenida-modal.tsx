@@ -46,7 +46,7 @@ export default function BienvenidaModal({
         </button>
 
         <div className="relative flex items-center justify-center border-b border-gray-200 bg-[#1F4E79]/10 px-6 py-3">
-          <img src="/logo-rizoma.svg" alt="Logo" className="absolute left-6 h-6 w-auto" />
+          <img src="/logo-rizoma.svg" alt="Logo" className="absolute left-6 h-8 w-auto" />
           <h2 className="text-lg font-bold text-[#1F4E79]">Instrucciones DISC</h2>
         </div>
 

@@ -234,7 +234,7 @@ export default function RecuperarPage() {
               <img
                 src="/logo-rizoma.svg"
                 alt="Desarrollo de Líderes y Equipo"
-                className="h-20 w-auto cursor-pointer transition-transform hover:scale-105"
+                className="h-24 w-auto cursor-pointer transition-transform hover:scale-105"
               />
             </Link>
           </div>

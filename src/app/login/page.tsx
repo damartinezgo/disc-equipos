@@ -85,7 +85,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
         <div className="mb-6 flex justify-center">
           <Link href="/">
-            <img src="/logo-rizoma.svg" alt="Desarrollo de Líderes y Equipo" className="h-20 w-auto cursor-pointer transition-transform hover:scale-105" />
+            <img src="/logo-rizoma.svg" alt="Desarrollo de Líderes y Equipo" className="h-24 w-auto cursor-pointer transition-transform hover:scale-105" />
           </Link>
         </div>
         <h1 className="text-2xl font-semibold text-[#1F2937]">Iniciar sesión</h1>

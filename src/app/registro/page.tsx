@@ -306,7 +306,7 @@ export default function RegistroPage() {
               <img
                 src="/logo-rizoma.svg"
                 alt="Desarrollo de Líderes y Equipo"
-                className="h-32 w-auto cursor-pointer transition-transform hover:scale-105"
+                className="h-36 w-auto cursor-pointer transition-transform hover:scale-105"
               />
             </Link>
           </div>
