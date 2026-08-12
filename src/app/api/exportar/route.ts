@@ -232,8 +232,8 @@ color: { argb: `FF${hex}` },
   // ── Hoja 2: Resumen por equipo ────────────────────────────────────────────
   const hojaResumen = workbook.addWorksheet('Resumen por Equipo')
   hojaResumen.columns = [
-    { header: 'Equipo', key: 'equipo', width: 22 },
     { header: 'Lugar', key: 'lugar', width: 20 },
+    { header: 'Equipo', key: 'equipo', width: 22 },
     { header: 'Total registrados', key: 'total', width: 18 },
     { header: 'Completaron', key: 'completaron', width: 13 },
     { header: '% Completado', key: 'pct', width: 14 },

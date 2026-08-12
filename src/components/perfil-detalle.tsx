@@ -152,10 +152,10 @@ export default function PerfilDetalle({
 
       {/* Main Tabs */}
       <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex gap-6" aria-label="Tabs">
+        <nav className="-mb-px flex gap-1 overflow-x-auto whitespace-nowrap" aria-label="Tabs">
           <button
             onClick={() => setMainTab('vision')}
-            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap border-b-2 py-4 px-4 text-sm font-medium transition-colors ${
               mainTab === 'vision'
                 ? 'border-[#1F4E79] text-[#1F4E79]'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -165,7 +165,7 @@ export default function PerfilDetalle({
           </button>
           <button
             onClick={() => setMainTab('recomendaciones')}
-            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap border-b-2 py-4 px-4 text-sm font-medium transition-colors ${
               mainTab === 'recomendaciones'
                 ? 'border-[#1F4E79] text-[#1F4E79]'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -175,7 +175,7 @@ export default function PerfilDetalle({
           </button>
           <button
             onClick={() => setMainTab('respuestas')}
-            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap border-b-2 py-4 px-4 text-sm font-medium transition-colors ${
               mainTab === 'respuestas'
                 ? 'border-[#1F4E79] text-[#1F4E79]'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
