@@ -49,10 +49,13 @@ export async function POST(req: NextRequest) {
     .select('*')
     .in('user_id', userIds)
 
-  // Leer lugares desde auth.users.user_metadata (columna lugar no existe en perfiles)
+  // Leer lugares y correos desde auth.users.user_metadata
   const { data: authRes } = await admin.auth.admin.listUsers()
   const lugarMap = new Map(
     (authRes?.users ?? []).map((u) => [u.id, u.user_metadata?.lugar ?? ''])
+  )
+  const emailMap = new Map(
+    (authRes?.users ?? []).map((u) => [u.id, u.email ?? ''])
   )
 
   if (!perfilesData) {
@@ -68,6 +71,7 @@ export async function POST(req: NextRequest) {
   const filas = userIds.map((uid) => ({
     user_id: uid,
     nombre: perfilesMap.get(uid)?.nombre ?? '',
+    correo: emailMap.get(uid) ?? '',
     lugar: lugarMap.get(uid) ?? '',
     equipo: perfilesMap.get(uid)?.equipo ?? '',
     completado: respuestasMap.get(uid)?.completado ? 'Sí' : 'No',
@@ -84,6 +88,7 @@ export async function POST(req: NextRequest) {
 
   const encabezados = [
     { header: 'Nombre', key: 'nombre', width: 24 },
+    { header: 'Correo', key: 'correo', width: 28 },
     { header: 'Lugar', key: 'lugar', width: 18 },
     { header: 'Equipo', key: 'equipo', width: 20 },
     { header: 'Completó', key: 'completado', width: 10 },
@@ -163,10 +168,10 @@ export async function POST(req: NextRequest) {
   const totalFilas = filas.length
   if (totalFilas > 0) {
     const colLetras: Record<string, { col: string; hex: string }> = {
-      d_global: { col: 'H', hex: '1F4E79' },
-      i_global: { col: 'I', hex: 'C00000' },
-      s_global: { col: 'J', hex: 'D9A300' },
-      c_global: { col: 'K', hex: '00843D' },
+      d_global: { col: 'I', hex: '1F4E79' },
+      i_global: { col: 'J', hex: 'C00000' },
+      s_global: { col: 'K', hex: 'D9A300' },
+      c_global: { col: 'L', hex: '00843D' },
     }
     Object.values(colLetras).forEach(({ col, hex }) => {
       const rango = `${col}2:${col}${totalFilas + 1}`

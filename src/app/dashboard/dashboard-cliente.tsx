@@ -266,32 +266,32 @@ export default function DashboardCliente({
             <table className="w-full min-w-[760px] text-sm">
               <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
                 <tr>
-                  <th className="px-5 py-3">Nombre</th>
-                  <th className="px-5 py-3 hidden sm:table-cell">Correo</th>
-                  <th className="px-5 py-3 hidden sm:table-cell">Lugar</th>
-                  <th className="px-5 py-3 hidden md:table-cell">Equipo</th>
-                  <th className="px-5 py-3">Estado</th>
-                  <th className="px-5 py-3">Perfil</th>
-                  <th className="px-5 py-3 hidden sm:table-cell">D</th>
-                  <th className="px-5 py-3 hidden sm:table-cell">I</th>
-                  <th className="px-5 py-3 hidden sm:table-cell">S</th>
-                  <th className="px-5 py-3 hidden sm:table-cell">C</th>
-                  <th className="px-5 py-3" />
+                  <th className="px-4 py-3">Nombre</th>
+                  <th className="px-4 py-3">Correo</th>
+                  <th className="px-4 py-3">Lugar</th>
+                  <th className="px-4 py-3">Equipo</th>
+                  <th className="px-4 py-3">Estado</th>
+                  <th className="px-4 py-3">Perfil</th>
+                  <th className="px-3 py-3 text-right text-xs">D</th>
+                  <th className="px-3 py-3 text-right text-xs">I</th>
+                  <th className="px-3 py-3 text-right text-xs">S</th>
+                  <th className="px-3 py-3 text-right text-xs">C</th>
+                  <th className="px-3 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {paginadas.map((p) => (
                   <tr key={p.user_id} className="transition-colors hover:bg-gray-50/50">
-                    <td className="px-5 py-3 font-medium text-gray-900">
+                    <td className="px-4 py-3 font-medium text-gray-900">
                       {p.perfiles?.[0]?.nombre || 'Sin nombre'}
                     </td>
-                    <td className="px-5 py-3 text-gray-500 hidden sm:table-cell truncate max-w-[150px]">
+                    <td className="px-4 py-3 text-gray-500 truncate max-w-[140px]">
                       {p.perfiles?.[0]?.correo || '—'}
                     </td>
-                    <td className="px-5 py-3 text-gray-500 hidden sm:table-cell">
+                    <td className="px-4 py-3 text-gray-500">
                       {p.perfiles?.[0]?.lugar || '—'}
                     </td>
-                    <td className="px-5 py-3 text-gray-500 hidden md:table-cell">
+                    <td className="px-4 py-3 text-gray-500">
                       {p.perfiles?.[0]?.equipo || '—'}
                     </td>
                     <td className="px-5 py-3">
@@ -317,16 +317,16 @@ export default function DashboardCliente({
                         <span className="text-gray-300">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 tabular-nums hidden sm:table-cell" style={{ color: COLOR_ESTILO.D }}>
+                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.D }}>
                       {p.d_global ?? <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-5 py-3 tabular-nums hidden sm:table-cell" style={{ color: COLOR_ESTILO.I }}>
+                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.I }}>
                       {p.i_global ?? <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-5 py-3 tabular-nums hidden sm:table-cell" style={{ color: COLOR_ESTILO.S }}>
+                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.S }}>
                       {p.s_global ?? <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-5 py-3 tabular-nums hidden sm:table-cell" style={{ color: COLOR_ESTILO.C }}>
+                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.C }}>
                       {p.c_global ?? <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-5 py-3 text-right">
