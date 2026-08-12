@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import LogoutButton from './logout-button'
 import BienvenidaModal from './bienvenida-modal'
 
@@ -57,7 +58,8 @@ export default function NavbarClient({
   async function handleLogoutConfirmado() {
     setMostrarLogoutConfirm(false)
     setSaliendo(true)
-    await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+    const supabase = createClient()
+    await supabase.auth.signOut()
     localStorage.clear()
     sessionStorage.clear()
     sessionStorage.setItem('just_logout', 'true')
@@ -87,7 +89,7 @@ export default function NavbarClient({
               <img
                 src="/logo-rizoma.svg"
                 alt="Desarrollo de Líderes y Equipo"
-                className="h-16 w-auto cursor-pointer transition-transform hover:scale-105"
+                className="h-20 w-auto cursor-pointer transition-transform hover:scale-105"
               />
             </button>
             <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
@@ -132,8 +134,7 @@ export default function NavbarClient({
             )}
           </div>
         </div>
-      </nav>
-      {mostrarInstrucciones && (
+      </nav>{mostrarInstrucciones && (
         <BienvenidaModal
           onAccept={() => {
             if (typeof window !== 'undefined') {
@@ -171,7 +172,7 @@ export default function NavbarClient({
             </div>
 
             <p className="mt-4 text-sm text-gray-600">
-              Si cierras sesión, serás redirigido a la pantalla de inicio de sesión.
+              Recuerda que si cierras sesión, el avance se guarda correctamente. Podrás retomar desde donde lo dejaste la próxima vez.
             </p>
 
             <div className="mt-6 flex justify-end gap-3">

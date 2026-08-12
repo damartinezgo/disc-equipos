@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LogoutButton() {
   const [saliendo, setSaliendo] = useState(false)
@@ -42,7 +43,8 @@ export default function LogoutButton() {
 
   async function handleLogout() {
     setSaliendo(true)
-    await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+    const supabase = createClient()
+    await supabase.auth.signOut().catch(() => {})
     localStorage.clear()
     sessionStorage.clear()
     sessionStorage.setItem('just_logout', 'true')
