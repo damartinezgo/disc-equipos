@@ -199,7 +199,7 @@ export default function PerfilDetalle({
             </div>
 
             {/* Contenedor optimizado para el gráfico */}
-            <div className="w-full flex-1 flex items-center justify-center bg-slate-50/50 rounded-lg border border-dashed border-slate-200 py-4">
+            <div className="w-full h-[220px] bg-slate-50/50 rounded-lg border border-dashed border-slate-200 py-4">
               <GraficoDisc d={scoring.d_global} i={scoring.i_global} s={scoring.s_global} c={scoring.c_global} />
             </div>
 

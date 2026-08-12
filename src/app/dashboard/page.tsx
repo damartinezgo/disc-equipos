@@ -79,9 +79,7 @@ export default async function DashboardPage() {
     .map((p) => {
       const scoring = scoringMap.get(p.id)
       const completado = respuestasMap.get(p.id) ?? false
-      const nombre = p.nombre && p.nombre !== 'Sin nombre'
-        ? p.nombre
-        : 'Sin nombre'
+      const nombre = p.nombre || 'Sin nombre'
       return {
         user_id: p.id,
         perfiles: [{ nombre, lugar: lugarMap.get(p.id) ?? '', equipo: p.equipo ?? '', created_at: p.created_at, correo: emailMap.get(p.id) ?? '' }],
