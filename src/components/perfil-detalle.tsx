@@ -36,6 +36,18 @@ const MODULO_STYLES: Record<string, { bg: string; text: string }> = {
   'Rol natural en el equipo':       { bg: '#EEF2FF', text: '#3730A3' },
 }
 
+// SVG icon path per module (24x24 outline)
+const MODULO_ICONOS: Record<string, string> = {
+  'Orientación general de trabajo':            'M12 2l3.09 6.91L22 12l-6.91 3.09L12 22l-3.09-6.91L2 12z',
+  'Toma de decisiones':                        'M12 3v1m0 16v1m8.66-11.34L21 9l-3 3m-6 0L9 9 6 9m12 6v2a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2m8-4a4 4 0 11-8 0 4 4 0 018 0z',
+  'Comunicación':                              'M8 12h8m-4 4l4-4-4-4',
+  'Motivadores':                               'M12 21.35l-1.45-1.3C5.45 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3 9.24 3 10.95 3.83 12 5.29 13.05 3.83 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.45 6.86-8.55 11.54L12 21.35z',
+  'Delegación':                                'M3 5a2 2 0 012-2h1l2.7 5.4A1 1 0 009.7 9H15a2 2 0 010 4h-5.3l-2-4L5 12V9a2 2 0 010-4V5zm18 14v2a2 2 0 01-2 2h-4l-4-4h6a2 2 0 000-4h-2v-4h2a2 2 0 000-4h-3.67l1.34-2.67A1 1 0 0111 9h5a2 2 0 010 4h-2.33l2 4A1 1 0 0119 13zm-8 5a2 2 0 100-4 2 2 0 000 4z',
+  'Acompañamiento, seguimiento y retroalimentación': 'M9 5a3 3 0 015.905.75A4 4 0 0117 15h-1a3 3 0 01-3-3V7.5a1.5 1.5 0 10-3 0V12a4.5 4.5 0 019 0v3a5.5 5.5 0 01-11 0V10.5A3.5 3.5 0 018.5 7V6a3.5 3.5 0 013.5-3 3 3 0 013 3v1.5A1.5 1.5 0 0113 9v-.5a1 1 0 10-2 0V9',
+  'Manejo de conflicto':                       'M12 1l2 5h5l-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3h5l2-5z',
+  'Rol natural en el equipo':                  'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
+}
+
 type Item = { item: number; modulo: string; categoria: string; enunciado: string; opciones: { letra: string; texto: string; disc: string }[] }
 const ITEMS = itemsData as Item[]
 
@@ -301,11 +313,11 @@ export default function PerfilDetalle({
                         : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                     }`}
                   >
-                    <span className="text-sm">
-                      <svg className="h-4 w-4" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="6" fill={style.text} />
-                      </svg>
-                    </span>
+                     <span className="text-sm flex items-center justify-center" style={{ color: style.text }}>
+                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                         <path strokeLinecap="round" strokeLinejoin="round" d={MODULO_ICONOS[modulo] || MODULO_ICONOS['Orientación general de trabajo']} />
+                       </svg>
+                     </span>
                     <span className="truncate">{modulo}</span>
                   </button>
                 )
@@ -329,9 +341,9 @@ export default function PerfilDetalle({
               >
                 <div className="flex justify-between items-center mb-6">
                   <h4 className="text-md font-bold text-slate-800 flex items-center gap-2">
-                     <svg className="h-4 w-4" viewBox="0 0 24 24">
-                       <circle cx="12" cy="12" r="6" fill={style.text} />
-                     </svg> {modulo}
+                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                       <path strokeLinecap="round" strokeLinejoin="round" d={MODULO_ICONOS[modulo] || MODULO_ICONOS['Orientación general de trabajo']} />
+                     </svg> <span style={{ color: style.text }}>{modulo}</span>
                   </h4>
                   <span className="text-xs font-medium text-slate-400 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full">
                     {itemsConRespuesta.length} pregunta{itemsConRespuesta.length !== 1 ? 's' : ''}
