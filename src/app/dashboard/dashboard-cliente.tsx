@@ -21,7 +21,7 @@ const NOMBRE_ESTILO: Record<string, string> = {
 type Persona = {
   user_id: string
   completado: boolean
-  perfiles: { nombre: string; lugar: string; equipo: string; created_at: string }[]
+  perfiles: { nombre: string; lugar: string; equipo: string; created_at: string; correo: string }[]
   // Scoring — null si aún no completó
   d_global: number | null
   i_global: number | null
@@ -262,12 +262,13 @@ export default function DashboardCliente({
             )}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+            <table className="w-full min-w-[760px] text-sm">
               <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
                 <tr>
                   <th className="px-5 py-3">Nombre</th>
-                  <th className="px-5 py-3">Lugar</th>
+                  <th className="px-5 py-3 hidden sm:table-cell">Correo</th>
+                  <th className="px-5 py-3 hidden sm:table-cell">Lugar</th>
                   <th className="px-5 py-3">Equipo</th>
                   <th className="px-5 py-3">Estado</th>
                   <th className="px-5 py-3">Perfil</th>
@@ -283,6 +284,9 @@ export default function DashboardCliente({
                   <tr key={p.user_id} className="transition-colors hover:bg-gray-50/50">
                     <td className="px-5 py-3 font-medium text-gray-900">
                       {p.perfiles?.[0]?.nombre || 'Sin nombre'}
+                    </td>
+                    <td className="px-5 py-3 text-gray-500 hidden sm:table-cell truncate max-w-[150px]">
+                      {p.perfiles?.[0]?.correo || '—'}
                     </td>
                     <td className="px-5 py-3 text-gray-500">
                       {p.perfiles?.[0]?.lugar || '—'}
@@ -350,7 +354,7 @@ export default function DashboardCliente({
                 ))}
                 {paginadas.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-5 py-10 text-center text-gray-400">
+                  <td colSpan={11} className="px-5 py-10 text-center text-gray-400">
                     {personas.length === 0
                       ? 'Aún no hay usuarios registrados.'
                       : 'Nadie coincide con este filtro todavía.'}

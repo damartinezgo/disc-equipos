@@ -81,10 +81,10 @@ export default async function DashboardPage() {
       const completado = respuestasMap.get(p.id) ?? false
       const nombre = p.nombre && p.nombre !== 'Sin nombre'
         ? p.nombre
-        : (emailMap.get(p.id) ?? '')
+        : 'Sin nombre'
       return {
         user_id: p.id,
-        perfiles: [{ nombre, lugar: lugarMap.get(p.id) ?? '', equipo: p.equipo ?? '', created_at: p.created_at }],
+        perfiles: [{ nombre, lugar: lugarMap.get(p.id) ?? '', equipo: p.equipo ?? '', created_at: p.created_at, correo: emailMap.get(p.id) ?? '' }],
       completado,
       // Scoring (null si no completó)
       d_global: scoring?.d_global ?? null,
