@@ -10,7 +10,7 @@ export default function Home() {
             <img
               src="/logo-rizoma.svg"
               alt="Rizoma"
-              className="h-16 w-auto cursor-pointer"
+              className="h-20 w-auto cursor-pointer"
             />
           </Link>
           <Link

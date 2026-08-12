@@ -48,7 +48,7 @@ export default function NavbarClient({
               <img
                 src="/logo-rizoma.svg"
                 alt="Desarrollo de Líderes y Equipo"
-                className="h-12 w-auto cursor-pointer"
+                className="h-16 w-auto cursor-pointer"
               />
             </Link>
             <span className="text-sm font-semibold text-[#1F4E79] hidden sm:inline">
