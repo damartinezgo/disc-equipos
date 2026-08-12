@@ -234,10 +234,32 @@ export default function DashboardCliente({
         {/* Contenido */}
         {activeTab === 'graficos' ? (
           <div className="space-y-6">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <GraficosDashboard personas={conScoring as any[]} />
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <MapaCalor personas={conScoring as any[]} />
+            {conScoring.length === 0 ? (
+              <div className="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-black/5">
+                <div className="mb-4 flex justify-center">
+                  <svg className="h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h3m-3 4h3m2 5.29V5.29a2 2 0 00-2.16-1.95l-5.5-1A2 2 0 003 3v7m18 0v7a2 2 0 01-2 2h-5.25M9 7v1M9 11v1m3-1v1m-3 5v1m3-1v1" />
+                  </svg>
+                </div>
+                <h3 className="mb-2 text-lg font-semibold text-gray-700">Aún no hay resultados disponibles</h3>
+                <p className="text-sm text-gray-500">
+                  Cuando alguien complete la encuesta DISC, aquí aparecerán los gráficos de distribución
+                  de estilos y el mapa de calor por categoría.
+                </p>
+                {personas.length > 0 && (
+                  <p className="mt-2 text-xs text-gray-400">
+                    {personas.filter(p => !p.completado).length} persona(s) aún no han completado la encuesta.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <GraficosDashboard personas={conScoring as any[]} />
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <MapaCalor personas={conScoring as any[]} />
+              </>
+            )}
           </div>
         ) : (
           <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
@@ -327,11 +349,13 @@ export default function DashboardCliente({
                   </tr>
                 ))}
                 {paginadas.length === 0 && (
-                  <tr>
-                    <td colSpan={10} className="px-5 py-10 text-center text-gray-400">
-                      Nadie coincide con este filtro todavía.
-                    </td>
-                  </tr>
+                <tr>
+                  <td colSpan={10} className="px-5 py-10 text-center text-gray-400">
+                    {personas.length === 0
+                      ? 'Aún no hay usuarios registrados.'
+                      : 'Nadie coincide con este filtro todavía.'}
+                  </td>
+                </tr>
                 )}
               </tbody>
             </table>
