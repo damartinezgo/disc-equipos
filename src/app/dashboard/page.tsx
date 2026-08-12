@@ -13,14 +13,18 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // Verifica que sea encuestador
-  const { data: esEncuestador } = await supabase
-    .from('encuestadores')
-    .select('user_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // Verifica que sea encuestador o admin
+  const isAdmin = user.user_metadata?.is_admin === true
 
-  if (!esEncuestador) redirect('/encuesta')
+  if (!isAdmin) {
+    const { data: esEncuestador } = await supabase
+      .from('encuestadores')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!esEncuestador) redirect('/encuesta')
+  }
 
   // Service role para leer datos de todos los usuarios sin restricción de RLS
   const admin = createServiceClient()

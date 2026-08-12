@@ -42,6 +42,13 @@ export default function CargaPage() {
       return
     }
 
+    const isAdmin = user.user_metadata?.is_admin === true
+
+    if (isAdmin) {
+      router.push('/dashboard')
+      return
+    }
+
     try {
       const { data: esEncuestador } = await supabase
         .from('encuestadores')
