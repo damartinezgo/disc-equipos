@@ -25,17 +25,18 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
-
   const esRutaProtegida = RUTAS_PROTEGIDAS.some((ruta) =>
     request.nextUrl.pathname.startsWith(ruta)
   )
 
-  if (esRutaProtegida && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    url.searchParams.set('siguiente', request.nextUrl.pathname)
-    return NextResponse.redirect(url)
+  if (esRutaProtegida) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('siguiente', request.nextUrl.pathname)
+      return NextResponse.redirect(url)
+    }
   }
 
   return response

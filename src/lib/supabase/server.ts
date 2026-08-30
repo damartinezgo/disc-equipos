@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 export async function createClient() {
@@ -18,8 +19,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // se ignora si se llama desde un Server Component (no puede escribir cookies);
-            // el middleware se encarga de refrescar la sesión en ese caso
+            // Se ignora si se llama desde Server Components
           }
         },
       },
@@ -27,24 +27,15 @@ export async function createClient() {
   )
 }
 
-// Cliente con permisos de administrador — SOLO para uso en API routes del servidor
-// (nunca importar este archivo en un componente cliente)
-import { createClient as createAdminClient } from '@supabase/supabase-js'
-
-function resolveAdminEnv() {
-  // Prioriza las nuevas env vars del @supabase/server SDK;
-  // cae en las legacy vars (SUPABASE_SERVICE_ROLE_KEY) si las nuevas no existen
-  return {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
-    key: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
-  }
-}
-
 export function createServiceClient() {
-  const { url, key } = resolveAdminEnv()
-  return createAdminClient(
-    url!,
-    key!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!url || !key) {
+    throw new Error('Faltan variables de entorno: NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.')
+  }
+
+  return createAdminClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
 }

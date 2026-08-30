@@ -108,14 +108,14 @@ export default function LoginPage() {
             />
           </div>
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+            <label className="block text-sm font-medium text-gray-700">Contraseña <span className="text-xs text-gray-400">(cédula)</span></label>
             <div className="relative mt-1">
               <input
                 required
                 type={mostrarPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Ingresa tu contraseña"
+                placeholder="Ingresa tu cédula"
                 className="w-full rounded-lg border border-gray-400 px-3 py-3 pr-10 text-base md:text-sm text-black transition-colors focus:border-[#EA580C] focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
               />
               <button
@@ -130,11 +130,6 @@ export default function LoginPage() {
                   <Eye className="h-5 w-5" />
                 )}
               </button>
-            </div>
-            <div className="mt-2 flex justify-end">
-              <Link href="/login/recuperar" className="text-xs font-medium text-[#EA580C] hover:underline">
-                ¿Olvidaste tu contraseña?
-              </Link>
             </div>
           </div>
           {error && (
@@ -169,11 +164,10 @@ export default function LoginPage() {
           </div>
         </form>
 
-        <div className="mt-8 text-center text-sm text-gray-500">
-           ¿No tienes cuenta?{' '}
-           <Link href="/registro" className="font-semibold text-[#EA580C] transition-colors hover:text-[#C2410C] hover:underline">
-             Regístrate
-           </Link>
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-400">
+            Si no tienes cuenta, contacta al administrador.
+          </p>
         </div>
       </div>
       </main>

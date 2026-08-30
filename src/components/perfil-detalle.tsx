@@ -81,8 +81,10 @@ const ModuloIcon = ({ modulo, className }: { modulo: string; className?: string 
 
 export default function PerfilDetalle({
   nombre,
-  lugar,
-  equipo,
+  cedula,
+  departamento,
+  dependencia,
+  correo,
   scoring,
   rubrica,
   textoPerfil,
@@ -90,8 +92,10 @@ export default function PerfilDetalle({
   respuestasMenos,
 }: {
   nombre: string
-  lugar: string
-  equipo: string
+  cedula?: string
+  departamento?: string
+  dependencia?: string
+  correo?: string
   scoring: Scoring
   rubrica: Rubrica[]
   textoPerfil: TextoPerfil
@@ -146,17 +150,25 @@ export default function PerfilDetalle({
               {getIniciales(nombre)}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-slate-800 capitalize">{nombre.toLowerCase()}</h2>
-                {equipo && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium border border-slate-200">
-                    {equipo}
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xl font-bold text-slate-800">{nombre}</h2>
+                {cedula && (
+                  <span className="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium border border-slate-200 tabular-nums">
+                    C.C. {cedula}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {lugar ? `${lugar} — Evaluación de Liderazgo (DISC)` : 'Evaluación de Liderazgo (DISC)'}
-              </p>
+              <div className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                {departamento && <span className="font-semibold text-slate-700">{departamento}</span>}
+                {departamento && dependencia && <span>•</span>}
+                {dependencia && <span>{dependencia}</span>}
+                {correo && (
+                  <>
+                    <span>•</span>
+                    <span className="text-slate-400">{correo}</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import DashboardCliente from './dashboard-cliente'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -31,8 +33,8 @@ export default async function DashboardPage() {
 
   // Queries paralelas para reducir LCP
   const [perfilesRes, respuestasRes, scoringRes, authRes] = await Promise.all([
-    admin.from('perfiles').select('id, nombre, equipo, created_at'),
-    admin.from('respuestas').select('user_id, completado'),
+    admin.from('perfiles').select('*'),
+    admin.from('respuestas').select('user_id, completado, respuestas_mas, respuestas_menos'),
     admin.from('scoring').select(`
       user_id,
       d_global, i_global, s_global, c_global,
@@ -43,7 +45,7 @@ export default async function DashboardPage() {
       dinamica_equipo_d, dinamica_equipo_i, dinamica_equipo_s, dinamica_equipo_c,
       calculado_en
     `),
-    admin.auth.admin.listUsers(),
+    admin.auth.admin.listUsers({ perPage: 1000 }),
   ])
 
   const perfilesData = perfilesRes.data
@@ -63,14 +65,20 @@ export default async function DashboardPage() {
     authUsers.map((u) => [u.id, u.email ?? ''])
   )
 
-  // Mapa de lugares desde user_metadata (columna lugar puede no existir en perfiles)
-  const lugarMap = new Map(
-    authUsers.map((u) => [u.id, u.user_metadata?.lugar ?? u.user_metadata?.lugar_id ?? ''])
+  // Mapa de user_metadata para leer campos del CSV (cedula, apellidos, depto, etc.)
+  const metaMap = new Map(
+    authUsers.map((u) => [u.id, u.user_metadata ?? {}])
   )
 
   // Mapas de búsqueda rápida
   const respuestasMap = new Map(
-    (respuestasData ?? []).map((r) => [r.user_id, r.completado])
+    (respuestasData ?? []).map((r) => {
+      const masCount = Object.keys(r.respuestas_mas || {}).length
+      const menosCount = Object.keys(r.respuestas_menos || {}).length
+      const totalRespondidas = masCount + menosCount
+      const porcentaje = Math.round((totalRespondidas / 56) * 100)
+      return [r.user_id, { completado: r.completado, porcentaje }]
+    })
   )
   const scoringMap = new Map(
     (scoringData ?? []).map((s) => [s.user_id, s])
@@ -82,12 +90,26 @@ export default async function DashboardPage() {
     .filter((p) => !adminIds.has(p.id))
     .map((p) => {
       const scoring = scoringMap.get(p.id)
-      const completado = respuestasMap.get(p.id) ?? false
-      const nombre = p.nombre || 'Sin nombre'
+      const respData = respuestasMap.get(p.id)
+      const completado = respData?.completado ?? false
+      const porcentaje = respData?.porcentaje ?? 0
+      const meta = metaMap.get(p.id) ?? {}
+      const nombre = p.nombre || meta.nombre || 'Sin nombre'
       return {
         user_id: p.id,
-        perfiles: [{ nombre, lugar: lugarMap.get(p.id) ?? '', equipo: p.equipo ?? '', created_at: p.created_at, correo: emailMap.get(p.id) ?? '' }],
-      completado,
+        perfiles: [{
+          nombre,
+          primer_apellido: p.primer_apellido || meta.primer_apellido || '',
+          segundo_apellido: p.segundo_apellido || meta.segundo_apellido || '',
+          cedula: p.cedula || meta.cedula || '',
+          departamento: p.departamento || meta.departamento || '',
+          dependencia_funciones: p.dependencia_funciones || meta.dependencia_funciones || '',
+          telefono: p.telefono || meta.telefono || '',
+          created_at: p.created_at,
+          correo: emailMap.get(p.id) ?? ''
+        }],
+        completado,
+        porcentaje,
       // Scoring (null si no completó)
       d_global: scoring?.d_global ?? null,
       i_global: scoring?.i_global ?? null,

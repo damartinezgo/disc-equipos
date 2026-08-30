@@ -12,18 +12,22 @@ const COLOR_DISC: Record<string, string> = {
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
 
-  // Solo un encuestador autenticado puede exportar
+  // Solo un encuestador o administrador autenticado puede exportar
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
   }
-  const { data: esEncuestador } = await supabase
-    .from('encuestadores')
-    .select('user_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!esEncuestador) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+
+  const isAdmin = user.user_metadata?.is_admin === true
+  if (!isAdmin) {
+    const { data: esEncuestador } = await supabase
+      .from('encuestadores')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!esEncuestador) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+    }
   }
 
   const { userIds }: { userIds: string[] } = await req.json()
@@ -40,7 +44,7 @@ export async function POST(req: NextRequest) {
   for (let i = 0; i < userIds.length; i += CHUNK) chunks.push(userIds.slice(i, i + CHUNK))
 
   const perfilesRes = await Promise.all(
-    chunks.map((c) => admin.from('perfiles').select('id, nombre, equipo, lugar').in('id', c))
+    chunks.map((c) => admin.from('perfiles').select('*').in('id', c))
   )
   const perfilesData = perfilesRes.flatMap((r) => r.data ?? [])
 
@@ -54,7 +58,7 @@ export async function POST(req: NextRequest) {
   )
   const scoringData = scoringRes.flatMap((r) => r.data ?? [])
 
-  // Leer correos/lugares desde auth.users (listUsers pagina: 100/page por defecto)
+  // Leer correos/metadata desde auth.users (listUsers pagina: 100/page por defecto)
   const allAuthUsers: { id: string; email?: string; user_metadata?: Record<string, unknown> }[] = []
   {
     let page = 1
@@ -71,8 +75,8 @@ export async function POST(req: NextRequest) {
       page++
     }
   }
-  const lugarMap = new Map(
-    allAuthUsers.map((u) => [u.id, (u.user_metadata?.lugar as string) ?? ''])
+  const metaMap = new Map(
+    allAuthUsers.map((u) => [u.id, (u.user_metadata ?? {}) as Record<string, string>])
   )
   const emailMap = new Map(
     allAuthUsers.map((u) => [u.id, u.email ?? ''])
@@ -90,12 +94,20 @@ export async function POST(req: NextRequest) {
   // Combinar datos por persona
   const filas = userIds.map((uid) => {
     const perfil = perfilesMap.get(uid)
+    const meta = metaMap.get(uid) ?? {}
+    const nombreCompleto = [
+      perfil?.nombre || meta.nombre,
+      perfil?.primer_apellido || meta.primer_apellido,
+      perfil?.segundo_apellido || meta.segundo_apellido,
+    ].filter(Boolean).join(' ') || 'Sin nombre'
+
     return {
       user_id: uid,
-      nombre: perfil?.nombre ?? '',
+      nombre: nombreCompleto,
+      cedula: perfil?.cedula || meta.cedula || '',
       correo: emailMap.get(uid) ?? '',
-      lugar: perfil?.lugar ?? lugarMap.get(uid) ?? '',
-      equipo: perfil?.equipo ?? '',
+      departamento: perfil?.departamento || meta.departamento || '',
+      dependencia_funciones: perfil?.dependencia_funciones || meta.dependencia_funciones || '',
       completado: respuestasMap.get(uid)?.completado ? 'Sí' : 'No',
       ...scoringMap.get(uid),
     }
@@ -107,13 +119,14 @@ export async function POST(req: NextRequest) {
   workbook.created = new Date()
 
   // ── Hoja 1: Resultados ────────────────────────────────────────────────────
-  const hoja = workbook.addWorksheet('Resultados - Desarrollo de Líderes y Equipo')
+  const hoja = workbook.addWorksheet('Resultados DISC')
 
   const encabezados = [
-    { header: 'Nombre', key: 'nombre', width: 24 },
-    { header: 'Correo', key: 'correo', width: 28 },
-    { header: 'Lugar', key: 'lugar', width: 18 },
-    { header: 'Equipo', key: 'equipo', width: 20 },
+    { header: 'Nombre Completo', key: 'nombre', width: 28 },
+    { header: 'Cédula', key: 'cedula', width: 16 },
+    { header: 'Correo', key: 'correo', width: 30 },
+    { header: 'Departamento', key: 'departamento', width: 20 },
+    { header: 'Dependencia / Funciones', key: 'dependencia_funciones', width: 35 },
     { header: 'Completó', key: 'completado', width: 10 },
     { header: 'Perfil', key: 'perfil_combinado', width: 8 },
     { header: 'Estilo principal', key: 'estilo_principal', width: 16 },
@@ -134,10 +147,10 @@ export async function POST(req: NextRequest) {
     { header: 'Gestión jefe I', key: 'gestion_jefe_i', width: 14 },
     { header: 'Gestión jefe S', key: 'gestion_jefe_s', width: 14 },
     { header: 'Gestión jefe C', key: 'gestion_jefe_c', width: 14 },
-    { header: 'Equipo D', key: 'dinamica_equipo_d', width: 10 },
-    { header: 'Equipo I', key: 'dinamica_equipo_i', width: 10 },
-    { header: 'Equipo S', key: 'dinamica_equipo_s', width: 10 },
-    { header: 'Equipo C', key: 'dinamica_equipo_c', width: 10 },
+    { header: 'Dinámica equipo D', key: 'dinamica_equipo_d', width: 16 },
+    { header: 'Dinámica equipo I', key: 'dinamica_equipo_i', width: 16 },
+    { header: 'Dinámica equipo S', key: 'dinamica_equipo_s', width: 16 },
+    { header: 'Dinámica equipo C', key: 'dinamica_equipo_c', width: 16 },
   ]
 
   hoja.columns = encabezados
@@ -229,11 +242,11 @@ color: { argb: `FF${hex}` },
     })
   }
 
-  // ── Hoja 2: Resumen por equipo ────────────────────────────────────────────
-  const hojaResumen = workbook.addWorksheet('Resumen por Equipo')
+  // ── Hoja 2: Resumen por Dependencia ───────────────────────────────────────
+  const hojaResumen = workbook.addWorksheet('Resumen por Dependencia')
   hojaResumen.columns = [
-    { header: 'Lugar', key: 'lugar', width: 20 },
-    { header: 'Equipo', key: 'equipo', width: 22 },
+    { header: 'Departamento', key: 'departamento', width: 22 },
+    { header: 'Dependencia / Funciones', key: 'dependencia', width: 35 },
     { header: 'Total registrados', key: 'total', width: 18 },
     { header: 'Completaron', key: 'completaron', width: 13 },
     { header: '% Completado', key: 'pct', width: 14 },
@@ -252,15 +265,15 @@ color: { argb: `FF${hex}` },
   })
   headerResumen.height = 22
 
-  // Agrupar por equipo
-  const porEquipo: Record<string, typeof filas> = {}
+  // Agrupar por dependencia
+  const porDep: Record<string, typeof filas> = {}
   filas.forEach((f) => {
-    const eq = f.equipo || 'Sin equipo'
-    if (!porEquipo[eq]) porEquipo[eq] = []
-    porEquipo[eq].push(f)
+    const dep = f.dependencia_funciones || 'Sin dependencia'
+    if (!porDep[dep]) porDep[dep] = []
+    porDep[dep].push(f)
   })
 
-  Object.entries(porEquipo).sort(([a], [b]) => a.localeCompare(b)).forEach(([equipo, miembros], idx) => {
+  Object.entries(porDep).sort(([a], [b]) => a.localeCompare(b)).forEach(([dep, miembros], idx) => {
     const completaron = miembros.filter((m) => m.completado === 'Sí')
     const n = completaron.length || 1
     const avg = (campo: string) =>
@@ -273,18 +286,18 @@ color: { argb: `FF${hex}` },
     })
     const estiloFrecuente = Object.entries(conteo).sort(([, a], [, b]) => b - a)[0]?.[0] ?? '-'
 
-     const row = hojaResumen.addRow({
-       equipo,
-       lugar: lugarMap.get(miembros[0].user_id) ?? '',
-       total: miembros.length,
-       completaron: completaron.length,
-       pct: miembros.length ? `${Math.round((completaron.length / miembros.length) * 100)}%` : '0%',
-       d: completaron.length ? avg('d_global') : '-',
-       i: completaron.length ? avg('i_global') : '-',
-       s: completaron.length ? avg('s_global') : '-',
-       c: completaron.length ? avg('c_global') : '-',
-       estilo: estiloFrecuente,
-     })
+    const row = hojaResumen.addRow({
+      departamento: miembros[0]?.departamento || '—',
+      dependencia: dep,
+      total: miembros.length,
+      completaron: completaron.length,
+      pct: miembros.length ? `${Math.round((completaron.length / miembros.length) * 100)}%` : '0%',
+      d: completaron.length ? avg('d_global') : '-',
+      i: completaron.length ? avg('i_global') : '-',
+      s: completaron.length ? avg('s_global') : '-',
+      c: completaron.length ? avg('c_global') : '-',
+      estilo: estiloFrecuente,
+    })
     row.height = 18
 
     if (idx % 2 === 0) {

@@ -39,18 +39,23 @@ export default async function DetallePersonaPage({
 
   const { data: perfil } = await adminSupabase
     .from('perfiles')
-    .select('nombre, equipo')
+    .select('*')
     .eq('id', userId)
     .maybeSingle()
 
   const { data: authRes } = await adminSupabase.auth.admin.getUserById(userId)
-  const lugar = authRes?.user?.user_metadata?.lugar ?? ''
+  const meta = (authRes?.user?.user_metadata ?? {}) as Record<string, string>
 
-  // Adjuntar perfiles para mantener la interfaz compatible
-  const scoringConPerfil = {
-    ...scoring,
-    perfiles: [{ nombre: perfil?.nombre ?? 'Sin nombre', lugar, equipo: perfil?.equipo ?? '' }],
-  }
+  const nombreCompleto = [
+    perfil?.nombre || meta.nombre,
+    perfil?.primer_apellido || meta.primer_apellido,
+    perfil?.segundo_apellido || meta.segundo_apellido,
+  ].filter(Boolean).join(' ') || 'Sin nombre'
+
+  const cedula = perfil?.cedula || meta.cedula || ''
+  const departamento = perfil?.departamento || meta.departamento || ''
+  const dependencia = perfil?.dependencia_funciones || meta.dependencia_funciones || ''
+  const correo = authRes?.user?.email || ''
 
   const { data: rubrica } = await supabase
     .from('rubrica')
@@ -73,9 +78,11 @@ export default async function DetallePersonaPage({
     <main className="min-h-screen bg-[#F7F8FA] px-4 py-8 flex flex-col">
       <div className="mx-auto max-w-6xl w-full flex-1">
         <PerfilDetalle
-           nombre={scoringConPerfil.perfiles[0].nombre}
-           lugar={scoringConPerfil.perfiles[0].lugar}
-           equipo={scoringConPerfil.perfiles[0].equipo}
+          nombre={nombreCompleto}
+          cedula={cedula}
+          departamento={departamento}
+          dependencia={dependencia}
+          correo={correo}
           scoring={scoring}
           rubrica={rubrica ?? []}
           textoPerfil={textoPerfil ?? null}

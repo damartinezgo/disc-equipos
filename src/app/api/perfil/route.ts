@@ -65,23 +65,33 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { terminos_aceptados } = body
+    const { terminos_aceptados, telefono } = body
 
     const admin = createServiceClient()
 
-    const { error } = await admin
-      .from('perfiles')
-      .update({ terminos_aceptados })
-      .eq('id', user.id)
+    const updateData: Record<string, unknown> = {}
+    if (terminos_aceptados !== undefined) updateData.terminos_aceptados = terminos_aceptados
+    if (telefono !== undefined) updateData.telefono = String(telefono).trim()
 
-    if (error) {
-      const msg = error.message.toLowerCase()
-      if (msg.includes('does not exist') && msg.includes('column')) {
-        // La columna terminos_aceptados aún no existe en la BD. La funcionalidad seguirá
-        // funcionando una vez aplicada la migración correspondiente.
-        return NextResponse.json({ ok: true, warning: 'La columna terminos_aceptados no existe todavía en la BD' })
+    if (Object.keys(updateData).length > 0) {
+      const { error } = await admin
+        .from('perfiles')
+        .update(updateData)
+        .eq('id', user.id)
+
+      if (error) {
+        console.error('Error al actualizar perfiles:', error)
       }
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // Also update Auth metadata if telefono is provided
+    if (telefono !== undefined) {
+      await admin.auth.admin.updateUserById(user.id, {
+        user_metadata: {
+          ...(user.user_metadata || {}),
+          telefono: String(telefono).trim(),
+        },
+      })
     }
 
     return NextResponse.json({ ok: true })

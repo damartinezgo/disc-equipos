@@ -14,9 +14,10 @@ export default function SessionManager() {
   const [targetPath, setTargetPath] = useState<string | null>(null)
 
   useEffect(() => {
+    const supabase = createClient()
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-           if (event === 'SIGNED_OUT' && !session) {
+        if (event === 'SIGNED_OUT' && !session) {
           if (sessionStorage.getItem('just_logout')) {
             sessionStorage.removeItem('just_logout')
             return
@@ -40,7 +41,7 @@ export default function SessionManager() {
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase, router, pathname, searchParams])
+  }, [pathname, searchParams])
 
   function handleRedirectToLogin() {
     setShowModal(false)

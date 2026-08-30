@@ -37,6 +37,7 @@ export default function EncuestaPage() {
   const [cargandoInicial, setCargandoInicial] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [nombreUsuario, setNombreUsuario] = useState<string | null>(null)
   const [mostrarModalProgreso, setMostrarModalProgreso] = useState(false)
   const [mostrarConfirmacionCierre, setMostrarConfirmacionCierre] = useState(false)
   const [mostrarInstrucciones, setMostrarInstrucciones] = useState(false)
@@ -59,6 +60,16 @@ export default function EncuestaPage() {
       }
 
       setUserId(user.id)
+
+      // Fetch user's name from perfiles
+      const { data: perfil } = await supabase
+        .from('perfiles')
+        .select('nombre')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (perfil?.nombre && perfil.nombre !== 'Sin nombre') {
+        setNombreUsuario(perfil.nombre)
+      }
 
       const { data } = await supabase
         .from('respuestas')
@@ -206,6 +217,14 @@ export default function EncuestaPage() {
     <>
       <main className="min-h-screen bg-[#F7F8FA] px-4 py-10">
         <div className="mx-auto max-w-2xl">
+          {/* Saludo personalizado */}
+          {nombreUsuario && (
+            <div className="mb-6 rounded-xl bg-white px-5 py-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-sm text-gray-600">
+                Hola, <span className="font-semibold text-[#1F4E79]">{nombreUsuario}</span>. Completa la encuesta a tu ritmo.
+              </p>
+            </div>
+          )}
           {/* barra de progreso */}
 
         {/* barra de progreso */}

@@ -1,8 +1,29 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import Link from 'next/link'
-import { BarChart3, Check, Clock, Eye, ChevronLeft, ChevronRight } from '@/lib/icons'
+import {
+  BarChart3,
+  Check,
+  Clock,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  UserPlus,
+  Download,
+  Search,
+  AlertCircle,
+  CheckCircle,
+  Users,
+  Pencil,
+  Trash2,
+  Upload,
+  FileSpreadsheet,
+  X,
+  RefreshCw,
+  FileUp,
+  Info,
+} from '@/lib/icons'
 import GraficosDashboard from './graficos-dashboard'
 import MapaCalor from './mapa-calor'
 
@@ -22,7 +43,18 @@ const NOMBRE_ESTILO: Record<string, string> = {
 type Persona = {
   user_id: string
   completado: boolean
-  perfiles: { nombre: string; lugar: string; equipo: string; created_at: string; correo: string }[]
+  porcentaje: number
+  perfiles: {
+    nombre: string
+    primer_apellido?: string
+    segundo_apellido?: string
+    cedula?: string
+    departamento?: string
+    dependencia_funciones?: string
+    telefono?: string
+    created_at: string
+    correo: string
+  }[]
   // Scoring — null si aún no completó
   d_global: number | null
   i_global: number | null
@@ -41,46 +73,147 @@ type Persona = {
   dinamica_equipo_s: number | null; dinamica_equipo_c: number | null
 }
 
+type UsuarioRegistrado = {
+  id: string
+  nombre: string
+  cedula: string
+  primer_apellido: string
+  segundo_apellido: string
+  departamento: string
+  municipio: string
+  dependencia_funciones: string
+  telefono: string
+  correo: string
+  created_at: string
+}
+
+const INITIAL_FORM = {
+  correo: '',
+  cedula: '',
+  nombres: '',
+  primer_apellido: '',
+  segundo_apellido: '',
+  departamento: '',
+  municipio: '',
+  dependencia_funciones: '',
+  telefono: '',
+}
+
 export default function DashboardCliente({
   personas,
 }: {
   personas: Persona[]
 }) {
-  const [filtroLugar, setFiltroLugar] = useState<string>('todos')
-  const [filtroEquipo, setFiltroEquipo] = useState<string>('todos')
+  // Tabs: 'graficos' | 'tabla' | 'usuarios'
+  const [activeTab, setActiveTab] = useState<'graficos' | 'tabla' | 'usuarios'>('tabla')
+
+  // --- Filtros Tab Resultados DISC ---
+  const [filtroDepto, setFiltroDepto] = useState<string>('todos')
+  const [filtroDependencia, setFiltroDependencia] = useState<string>('todos')
   const [filtroEstilo, setFiltroEstilo] = useState<string>('todos')
   const [filtroEstado, setFiltroEstado] = useState<string>('todos')
   const [busqueda, setBusqueda] = useState('')
-  const [activeTab, setActiveTab] = useState<'graficos' | 'tabla'>('graficos')
   const [exportando, setExportando] = useState(false)
   const [paginaActual, setPaginaActual] = useState(1)
   const REGISTROS_POR_PAGINA = 10
 
-  const lugaresUnicos = useMemo(
-    () => Array.from(new Set(personas.map((p) => p.perfiles?.[0]?.lugar).filter(Boolean))) as string[],
+  // --- Gestión de Usuarios State ---
+  const [usuariosRegistrados, setUsuariosRegistrados] = useState<UsuarioRegistrado[]>([])
+  const [cargandoUsuarios, setCargandoUsuarios] = useState(false)
+  const [busquedaUsuarios, setBusquedaUsuarios] = useState('')
+  const [filtroDepartamentoUsuarios, setFiltroDepartamentoUsuarios] = useState('todos')
+  const [filtroDependenciaUsuarios, setFiltroDependenciaUsuarios] = useState('todos')
+  const [paginaUsuarios, setPaginaUsuarios] = useState(1)
+  const [exportandoUsuarios, setExportandoUsuarios] = useState(false)
+  const USUARIOS_POR_PAGINA = 10
+
+  // Modales de Usuarios
+  const [mostrarModalCrear, setMostrarModalCrear] = useState(false)
+  const [formDataCrear, setFormDataCrear] = useState(INITIAL_FORM)
+  const [guardandoCrear, setGuardandoCrear] = useState(false)
+  const [msgCrear, setMsgCrear] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
+
+  const [usuarioEditar, setUsuarioEditar] = useState<UsuarioRegistrado | null>(null)
+  const [formDataEditar, setFormDataEditar] = useState(INITIAL_FORM)
+  const [guardandoEditar, setGuardandoEditar] = useState(false)
+  const [msgEditar, setMsgEditar] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
+
+  const [usuarioEliminar, setUsuarioEliminar] = useState<UsuarioRegistrado | null>(null)
+  const [eliminandoUsuario, setEliminandoUsuario] = useState(false)
+  const [msgEliminar, setMsgEliminar] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
+
+  // Modal Carga Masiva
+  const [mostrarModalCarga, setMostrarModalCarga] = useState(false)
+  const [archivoCarga, setArchivoCarga] = useState<File | null>(null)
+  const [cargandoArchivo, setCargandoArchivo] = useState(false)
+  const [resultadoCarga, setResultadoCarga] = useState<{
+    ok: boolean
+    total?: number
+    creados?: number
+    actualizados?: number
+    fallidos?: number
+    errores?: string[]
+    errorGeneral?: string
+  } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Carga inicial de usuarios
+  const cargarUsuarios = useCallback(async () => {
+    setCargandoUsuarios(true)
+    try {
+      const res = await fetch('/api/admin/users')
+      if (res.ok) {
+        const data = await res.json()
+        setUsuariosRegistrados(data.usuarios ?? [])
+      }
+    } finally {
+      setCargandoUsuarios(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeTab === 'usuarios' && usuariosRegistrados.length === 0) {
+      cargarUsuarios()
+    }
+  }, [activeTab, usuariosRegistrados.length, cargarUsuarios])
+
+  // --- FILTROS TAB RESULTADOS DISC ---
+  const departamentosUnicosMain = useMemo(
+    () => Array.from(new Set(personas.map((p) => p.perfiles?.[0]?.departamento).filter(Boolean))).sort() as string[],
     [personas]
   )
 
-  const equiposDisponibles = useMemo(() => {
-    const base = filtroLugar === 'todos' ? personas : personas.filter((p) => p.perfiles?.[0]?.lugar === filtroLugar)
-    return Array.from(new Set(base.map((p) => p.perfiles?.[0]?.equipo).filter(Boolean)))
-  }, [personas, filtroLugar])
+  const dependenciasUnicasMain = useMemo(() => {
+    const base = filtroDepto === 'todos'
+      ? personas
+      : personas.filter((p) => p.perfiles?.[0]?.departamento === filtroDepto)
+    return Array.from(new Set(base.map((p) => p.perfiles?.[0]?.dependencia_funciones).filter(Boolean))).sort() as string[]
+  }, [personas, filtroDepto])
 
   const filtradas = useMemo(() => {
     return personas.filter((p) => {
-      const lugar = p.perfiles?.[0]?.lugar ?? ''
-      if (filtroLugar !== 'todos' && lugar !== filtroLugar) return false
-      if (filtroEquipo !== 'todos' && p.perfiles?.[0]?.equipo !== filtroEquipo) return false
+      const perf = p.perfiles?.[0]
+      const depto = perf?.departamento ?? ''
+      const dep = perf?.dependencia_funciones ?? ''
+      const nombreCompleto = [perf?.nombre, perf?.primer_apellido, perf?.segundo_apellido].filter(Boolean).join(' ')
+
+      if (filtroDepto !== 'todos' && depto !== filtroDepto) return false
+      if (filtroDependencia !== 'todos' && dep !== filtroDependencia) return false
       if (filtroEstilo !== 'todos' && p.estilo_principal !== filtroEstilo) return false
       if (filtroEstado === 'completado' && !p.completado) return false
       if (filtroEstado === 'pendiente' && p.completado) return false
-      if (busqueda && !p.perfiles?.[0]?.nombre?.toLowerCase().includes(busqueda.toLowerCase()))
-        return false
+      if (busqueda) {
+        const q = busqueda.toLowerCase()
+        const match =
+          nombreCompleto.toLowerCase().includes(q) ||
+          dep.toLowerCase().includes(q) ||
+          depto.toLowerCase().includes(q)
+        if (!match) return false
+      }
       return true
     })
-  }, [personas, filtroLugar, filtroEquipo, filtroEstilo, filtroEstado, busqueda])
+  }, [personas, filtroDepto, filtroDependencia, filtroEstilo, filtroEstado, busqueda])
 
-  // Solo los que completaron se pasan a gráficos y exportación
   const conScoring = filtradas.filter((p) => p.completado)
   const totalCompletados = personas.filter((p) => p.completado).length
   const pctCompletado = personas.length
@@ -93,6 +226,46 @@ export default function DashboardCliente({
     return filtradas.slice(start, start + REGISTROS_POR_PAGINA)
   }, [filtradas, paginaActual])
 
+  // --- FILTROS TAB GESTIÓN DE USUARIOS ---
+  const departamentosUnicosUsuarios = useMemo(
+    () => Array.from(new Set(usuariosRegistrados.map((u) => u.departamento).filter(Boolean))).sort(),
+    [usuariosRegistrados]
+  )
+  const dependenciasUnicasUsuarios = useMemo(() => {
+    const base = filtroDepartamentoUsuarios === 'todos'
+      ? usuariosRegistrados
+      : usuariosRegistrados.filter((u) => u.departamento === filtroDepartamentoUsuarios)
+    return Array.from(new Set(base.map((u) => u.dependencia_funciones).filter(Boolean))).sort()
+  }, [usuariosRegistrados, filtroDepartamentoUsuarios])
+
+  const usuariosFiltrados = useMemo(() => {
+    return usuariosRegistrados.filter((u) => {
+      if (filtroDepartamentoUsuarios !== 'todos' && u.departamento !== filtroDepartamentoUsuarios) return false
+      if (filtroDependenciaUsuarios !== 'todos' && u.dependencia_funciones !== filtroDependenciaUsuarios) return false
+      if (busquedaUsuarios) {
+        const q = busquedaUsuarios.toLowerCase()
+        const match =
+          u.nombre?.toLowerCase().includes(q) ||
+          u.correo?.toLowerCase().includes(q) ||
+          u.cedula?.toLowerCase().includes(q) ||
+          u.primer_apellido?.toLowerCase().includes(q) ||
+          u.segundo_apellido?.toLowerCase().includes(q) ||
+          u.telefono?.toLowerCase().includes(q) ||
+          u.departamento?.toLowerCase().includes(q) ||
+          u.dependencia_funciones?.toLowerCase().includes(q)
+        if (!match) return false
+      }
+      return true
+    })
+  }, [usuariosRegistrados, filtroDepartamentoUsuarios, filtroDependenciaUsuarios, busquedaUsuarios])
+
+  const totalPaginasUsuarios = Math.ceil(usuariosFiltrados.length / USUARIOS_POR_PAGINA)
+  const usuariosPaginados = useMemo(() => {
+    const start = (paginaUsuarios - 1) * USUARIOS_POR_PAGINA
+    return usuariosFiltrados.slice(start, start + USUARIOS_POR_PAGINA)
+  }, [usuariosFiltrados, paginaUsuarios])
+
+  // --- EXPORTAR DISC ---
   async function exportar() {
     setExportando(true)
     try {
@@ -100,10 +273,14 @@ export default function DashboardCliente({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userIds: conScoring.map((p) => p.user_id),
+          userIds: filtradas.map((p) => p.user_id),
         }),
       })
-      if (!res.ok) throw new Error('Error al exportar')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Error al exportar resultados' }))
+        alert(data.error || 'Error al exportar resultados DISC')
+        return
+      }
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -111,141 +288,487 @@ export default function DashboardCliente({
       a.download = `disc_resultados_${new Date().toISOString().slice(0, 10)}.xlsx`
       a.click()
       URL.revokeObjectURL(url)
+    } catch {
+      alert('Error de conexión al exportar resultados')
     } finally {
       setExportando(false)
     }
   }
 
+  // --- EXPORTAR USUARIOS ---
+  async function exportarUsuarios() {
+    setExportandoUsuarios(true)
+    try {
+      const res = await fetch('/api/admin/users/exportar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds: usuariosFiltrados.map(u => u.id) }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Error al exportar' }))
+        alert(data.error || 'Error al exportar usuarios')
+        return
+      }
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('spreadsheet') && !contentType.includes('octet-stream')) {
+        alert('Error: la respuesta del servidor no es un archivo Excel')
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `usuarios_registrados_${new Date().toISOString().slice(0, 10)}.xlsx`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      alert('Error de conexión al exportar usuarios')
+    } finally {
+      setExportandoUsuarios(false)
+    }
+  }
+
+  // --- CREAR USUARIO ---
+  async function crearUsuario(e: React.FormEvent) {
+    e.preventDefault()
+    setGuardandoCrear(true)
+    setMsgCrear(null)
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formDataCrear),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setMsgCrear({ tipo: 'error', texto: data.error || 'Error al crear usuario' })
+        return
+      }
+      setMsgCrear({ tipo: 'ok', texto: `Usuario creado exitosamente (${formDataCrear.correo})` })
+      setFormDataCrear(INITIAL_FORM)
+      cargarUsuarios()
+      setTimeout(() => {
+        setMostrarModalCrear(false)
+        setMsgCrear(null)
+      }, 1200)
+    } catch {
+      setMsgCrear({ tipo: 'error', texto: 'Error de conexión con el servidor' })
+    } finally {
+      setGuardandoCrear(false)
+    }
+  }
+
+  // --- EDITAR USUARIO ---
+  function abrirEditar(u: UsuarioRegistrado) {
+    setUsuarioEditar(u)
+    setFormDataEditar({
+      correo: u.correo || '',
+      cedula: u.cedula || '',
+      nombres: u.nombre || '',
+      primer_apellido: u.primer_apellido || '',
+      segundo_apellido: u.segundo_apellido || '',
+      departamento: u.departamento || '',
+      municipio: '',
+      dependencia_funciones: u.dependencia_funciones || '',
+      telefono: u.telefono || '',
+    })
+    setMsgEditar(null)
+  }
+
+  async function guardarEdicion(e: React.FormEvent) {
+    e.preventDefault()
+    if (!usuarioEditar) return
+    setGuardandoEditar(true)
+    setMsgEditar(null)
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: usuarioEditar.id,
+          ...formDataEditar,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setMsgEditar({ tipo: 'error', texto: data.error || 'Error al actualizar usuario' })
+        return
+      }
+      setMsgEditar({ tipo: 'ok', texto: 'Datos actualizados correctamente' })
+      cargarUsuarios()
+      setTimeout(() => {
+        setUsuarioEditar(null)
+        setMsgEditar(null)
+      }, 1000)
+    } catch {
+      setMsgEditar({ tipo: 'error', texto: 'Error de conexión' })
+    } finally {
+      setGuardandoEditar(false)
+    }
+  }
+
+  // --- ELIMINAR USUARIO ---
+  async function confirmarEliminar() {
+    if (!usuarioEliminar) return
+    setEliminandoUsuario(true)
+    setMsgEliminar(null)
+    try {
+      const res = await fetch(`/api/admin/users?id=${usuarioEliminar.id}`, {
+        method: 'DELETE',
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setMsgEliminar({ tipo: 'error', texto: data.error || 'Error al eliminar usuario' })
+        return
+      }
+      setMsgEliminar({ tipo: 'ok', texto: `Usuario ${usuarioEliminar.nombre || ''} eliminado exitosamente` })
+      cargarUsuarios()
+      setTimeout(() => {
+        setUsuarioEliminar(null)
+        setMsgEliminar(null)
+      }, 1200)
+    } catch {
+      setMsgEliminar({ tipo: 'error', texto: 'Error de conexión al eliminar usuario' })
+    } finally {
+      setEliminandoUsuario(false)
+    }
+  }
+
+  // --- CARGA MASIVA EXCEL / CSV ---
+  async function procesarCargaMasiva(e: React.FormEvent) {
+    e.preventDefault()
+    if (!archivoCarga) return
+    setCargandoArchivo(true)
+    setResultadoCarga(null)
+    try {
+      const formData = new FormData()
+      formData.append('file', archivoCarga)
+
+      const res = await fetch('/api/admin/users/importar', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setResultadoCarga({
+          ok: false,
+          errorGeneral: data.error || 'Error al procesar el archivo',
+        })
+        return
+      }
+      setResultadoCarga({
+        ok: true,
+        total: data.total,
+        creados: data.creados,
+        actualizados: data.actualizados,
+        fallidos: data.fallidos,
+        errores: data.errores,
+      })
+      cargarUsuarios()
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      setArchivoCarga(null)
+    } catch {
+      setResultadoCarga({
+        ok: false,
+        errorGeneral: 'Error de conexión al enviar el archivo',
+      })
+    } finally {
+      setCargandoArchivo(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#F7F8FA] px-4 py-8 flex flex-col">
-      <div className="mx-auto max-w-6xl w-full flex-1">
+      <div className="mx-auto max-w-7xl w-full flex-1">
 
-        {/* Encabezado */}
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-[#1F2937]">Resultados — Desarrollo de Líderes y Equipo</h1>
-            <p className="mt-1 text-sm font-medium text-[#1F4E79]">
-              Bienvenido al panel. Aquí puedes visualizar los resultados de tu equipo.
-            </p>
-            <p className="mt-2 text-sm text-gray-500">
-              {filtradas.length} de {personas.length} personas
-              {' · '}
-              <span className="font-medium text-[#00843D]">
-                {totalCompletados} completaron ({pctCompletado}%)
-              </span>
-            </p>
-          </div>
-          <button
-            onClick={exportar}
-            disabled={exportando || conScoring.length === 0}
-            className="rounded-lg bg-[#1F4E79] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#173A5C] disabled:opacity-50 whitespace-nowrap"
-          >
-            {exportando ? 'Generando…' : '↓ Descargar Excel'}
-          </button>
+        {/* Encabezado Principal — Compacto */}
+        <div className="mb-2 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-[#1F2937]">
+            Resultados — Desarrollo de Líderes y Equipos
+          </h1>
+          <p className="text-sm text-gray-500 whitespace-nowrap">
+            {personas.length} personas evaluadas
+            {' · '}
+            <span className="font-semibold text-[#00843D]">
+              {totalCompletados} completaron ({pctCompletado}%)
+            </span>
+          </p>
         </div>
 
-        {/* Filtros Grid */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-[2fr_repeat(4,1fr)_auto] gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <input
-            value={busqueda}
-            onChange={(e) => { setBusqueda(e.target.value); setPaginaActual(1) }}
-            placeholder="Buscar por nombre…"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
-          />
-          <select
-            value={filtroLugar}
-            onChange={(e) => { setFiltroLugar(e.target.value); setPaginaActual(1) }}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
-          >
-            <option value="todos">Lugar</option>
-            {lugaresUnicos.map((l) => (
-              <option key={l} value={l}>{l}</option>
-            ))}
-          </select>
-          <select
-            value={filtroEquipo}
-            onChange={(e) => { setFiltroEquipo(e.target.value); setPaginaActual(1) }}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
-          >
-            <option value="todos">Equipo</option>
-            {equiposDisponibles.map((eq) => (
-              <option key={eq} value={eq}>{eq}</option>
-            ))}
-          </select>
-          <select
-            value={filtroEstilo}
-            onChange={(e) => { setFiltroEstilo(e.target.value); setPaginaActual(1) }}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
-          >
-            <option value="todos">Estilo</option>
-            {Object.entries(NOMBRE_ESTILO).map(([k]) => (
-              <option key={k} value={k}>{k}</option>
-            ))}
-          </select>
-          <select
-            value={filtroEstado}
-            onChange={(e) => { setFiltroEstado(e.target.value); setPaginaActual(1) }}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
-          >
-            <option value="todos">Estado</option>
-            <option value="completado">Completado</option>
-            <option value="pendiente">Pendiente</option>
-          </select>
-          <button
-            onClick={() => {
-              setFiltroLugar('todos')
-              setFiltroEquipo('todos')
-              setFiltroEstilo('todos')
-              setFiltroEstado('todos')
-              setBusqueda('')
-              setPaginaActual(1)
-            }}
-            className="w-full whitespace-nowrap rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Limpiar
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="mb-6 border-b border-gray-200">
+        {/* Tabs de Navegación */}
+        <div className="mb-4 border-b border-gray-200">
           <nav className="-mb-px flex gap-6" aria-label="Tabs">
             <button
-              onClick={() => setActiveTab('graficos')}
-              className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${activeTab === 'graficos'
+              onClick={() => setActiveTab('tabla')}
+              className={`inline-flex items-center gap-2 whitespace-nowrap border-b-2 py-4 px-2 text-sm font-bold transition-colors ${activeTab === 'tabla'
                 ? 'border-[#1F4E79] text-[#1F4E79]'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
             >
-              Visión General
+              <Eye className="h-4 w-4" />
+              Detalle por Persona (Resultados DISC)
             </button>
             <button
-              onClick={() => setActiveTab('tabla')}
-              className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${activeTab === 'tabla'
+              onClick={() => setActiveTab('graficos')}
+              className={`inline-flex items-center gap-2 whitespace-nowrap border-b-2 py-4 px-2 text-sm font-bold transition-colors ${activeTab === 'graficos'
                 ? 'border-[#1F4E79] text-[#1F4E79]'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
             >
-              Detalle por Persona
+              <BarChart3 className="h-4 w-4" />
+              Visión General y Mapas
+            </button>
+            <button
+              onClick={() => setActiveTab('usuarios')}
+              className={`inline-flex items-center gap-2 whitespace-nowrap border-b-2 py-4 px-2 text-sm font-bold transition-colors ${activeTab === 'usuarios'
+                ? 'border-[#1F4E79] text-[#1F4E79]'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+            >
+              <Users className="h-4 w-4" />
+              Gestión de Usuarios (CRUD y Administración)
             </button>
           </nav>
         </div>
 
-        {/* Contenido */}
-        {activeTab === 'graficos' ? (
+        {/* ========================================================================= */}
+        {/* TAB 1: DETALLE POR PERSONA (RESULTADOS DISC)                               */}
+        {/* ========================================================================= */}
+        {activeTab === 'tabla' ? (
+          <div className="space-y-4">
+            {/* Barra de Filtros Actualizada */}
+            <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1.1fr_1.3fr_0.9fr_0.9fr_auto] gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  value={busqueda}
+                  onChange={(e) => { setBusqueda(e.target.value); setPaginaActual(1) }}
+                  placeholder="Buscar por nombre o dependencia…"
+                  className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
+                />
+              </div>
+
+              <select
+                value={filtroDepto}
+                onChange={(e) => { setFiltroDepto(e.target.value); setFiltroDependencia('todos'); setPaginaActual(1) }}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black truncate"
+              >
+                <option value="todos">Departamento (Todos)</option>
+                {departamentosUnicosMain.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+
+              <select
+                value={filtroDependencia}
+                onChange={(e) => { setFiltroDependencia(e.target.value); setPaginaActual(1) }}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black truncate"
+              >
+                <option value="todos">Dependencia (Todas)</option>
+                {dependenciasUnicasMain.map((dep) => (
+                  <option key={dep} value={dep}>{dep}</option>
+                ))}
+              </select>
+
+              <select
+                value={filtroEstilo}
+                onChange={(e) => { setFiltroEstilo(e.target.value); setPaginaActual(1) }}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
+              >
+                <option value="todos">Perfil (Todos)</option>
+                {Object.entries(NOMBRE_ESTILO).map(([k, label]) => (
+                  <option key={k} value={k}>{k} - {label}</option>
+                ))}
+              </select>
+
+              <select
+                value={filtroEstado}
+                onChange={(e) => { setFiltroEstado(e.target.value); setPaginaActual(1) }}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
+              >
+                <option value="todos">Estado (Todos)</option>
+                <option value="completado">Completado</option>
+                <option value="pendiente">Pendiente</option>
+              </select>
+
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={() => {
+                    setFiltroDepto('todos')
+                    setFiltroDependencia('todos')
+                    setFiltroEstilo('todos')
+                    setFiltroEstado('todos')
+                    setBusqueda('')
+                    setPaginaActual(1)
+                  }}
+                  className="flex-1 whitespace-nowrap rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                >
+                  Limpiar
+                </button>
+
+                <button
+                  onClick={exportar}
+                  disabled={exportando || filtradas.length === 0}
+                  className="inline-flex items-center justify-center rounded-lg bg-[#1F4E79] px-3 py-2 text-white shadow-sm transition hover:bg-[#173A5C] disabled:opacity-50"
+                  title="Exportar Excel"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Tabla de Resultados DISC Optimizada */}
+            <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+              <table className="w-full min-w-[860px] text-sm">
+                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 border-b border-gray-200">
+                  <tr>
+                    <th className="px-5 py-3.5">Nombre y Apellidos</th>
+                    <th className="px-4 py-3.5">Departamento</th>
+                    <th className="px-4 py-3.5 min-w-[200px]">Dependencia</th>
+                    <th className="px-4 py-3.5">Estado</th>
+                    <th className="px-4 py-3.5">Perfil DISC</th>
+                    <th className="px-3 py-3.5 text-center font-bold text-xs" style={{ color: COLOR_ESTILO.D }}>D</th>
+                    <th className="px-3 py-3.5 text-center font-bold text-xs" style={{ color: COLOR_ESTILO.I }}>I</th>
+                    <th className="px-3 py-3.5 text-center font-bold text-xs" style={{ color: COLOR_ESTILO.S }}>S</th>
+                    <th className="px-3 py-3.5 text-center font-bold text-xs" style={{ color: COLOR_ESTILO.C }}>C</th>
+                    <th className="px-4 py-3.5 text-center">Detalle</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {paginadas.map((p) => {
+                    const perf = p.perfiles?.[0]
+                    const nombreCompleto = [perf?.nombre, perf?.primer_apellido, perf?.segundo_apellido].filter(Boolean).join(' ') || 'Sin nombre'
+                    return (
+                      <tr key={p.user_id} className="transition-colors hover:bg-gray-50/70">
+                        <td className="px-5 py-3.5 font-medium text-gray-900">
+                          {nombreCompleto}
+                        </td>
+                        <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap text-xs font-medium">
+                          {perf?.departamento || '—'}
+                        </td>
+                        <td className="px-4 py-3.5 text-gray-600 min-w-[200px] max-w-[280px] whitespace-normal break-words leading-snug text-xs">
+                          {perf?.dependencia_funciones || '—'}
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          {p.completado ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
+                              <Check className="h-3.5 w-3.5 flex-shrink-0" />
+                              Completado (100%)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                              <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                              Pendiente ({p.porcentaje}%)
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          {p.completado && p.estilo_principal ? (
+                            <span
+                              className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-sm"
+                              style={{ backgroundColor: COLOR_ESTILO[p.estilo_principal] || '#1F4E79' }}
+                            >
+                              {p.perfil_combinado || p.estilo_principal}
+                            </span>
+                          ) : (
+                            <span className="text-gray-300 text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3.5 tabular-nums text-center font-bold text-sm" style={{ color: COLOR_ESTILO.D }}>
+                          {p.d_global ?? <span className="text-gray-300 font-normal text-xs">—</span>}
+                        </td>
+                        <td className="px-3 py-3.5 tabular-nums text-center font-bold text-sm" style={{ color: COLOR_ESTILO.I }}>
+                          {p.i_global ?? <span className="text-gray-300 font-normal text-xs">—</span>}
+                        </td>
+                        <td className="px-3 py-3.5 tabular-nums text-center font-bold text-sm" style={{ color: COLOR_ESTILO.S }}>
+                          {p.s_global ?? <span className="text-gray-300 font-normal text-xs">—</span>}
+                        </td>
+                        <td className="px-3 py-3.5 tabular-nums text-center font-bold text-sm" style={{ color: COLOR_ESTILO.C }}>
+                          {p.c_global ?? <span className="text-gray-300 font-normal text-xs">—</span>}
+                        </td>
+                        <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                          {p.completado ? (
+                            <Link
+                              href={`/dashboard/${p.user_id}`}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#1F4E79] bg-blue-50 transition hover:bg-[#1F4E79] hover:text-white"
+                              title="Ver informe psicométrico individual"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          ) : (
+                            <span className="inline-flex h-8 w-8 items-center justify-center text-gray-300" title="Aún no ha realizado la evaluación">
+                              <Eye className="h-4 w-4" />
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                  {paginadas.length === 0 && (
+                    <tr>
+                      <td colSpan={10} className="px-5 py-12 text-center text-gray-400">
+                        {personas.length === 0
+                          ? 'Aún no hay usuarios en el sistema.'
+                          : 'No se encontraron personas con los filtros seleccionados.'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              {/* Paginación */}
+              {totalPaginas > 1 && (
+                <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+                  <p className="text-sm text-gray-700">
+                    Mostrando <span className="font-semibold">{(paginaActual - 1) * REGISTROS_POR_PAGINA + 1}</span> a{' '}
+                    <span className="font-semibold">
+                      {Math.min(paginaActual * REGISTROS_POR_PAGINA, filtradas.length)}
+                    </span>{' '}
+                    de <span className="font-semibold">{filtradas.length}</span> personas
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
+                      disabled={paginaActual === 1}
+                      className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                    </button>
+                    <span className="text-sm font-medium text-gray-700 px-2">
+                      {paginaActual} / {totalPaginas}
+                    </span>
+                    <button
+                      onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))}
+                      disabled={paginaActual === totalPaginas}
+                      className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : activeTab === 'graficos' ? (
+          /* ========================================================================= */
+          /* TAB 2: VISIÓN GENERAL Y MAPAS DE CALOR                                    */
+          /* ========================================================================= */
           <div className="space-y-6">
             {conScoring.length === 0 ? (
-              <div className="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-black/5">
+              <div className="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-black/5">
                 <div className="mb-4 flex justify-center">
-            <BarChart3 className="h-12 w-12 text-gray-300" />
+                  <BarChart3 className="h-12 w-12 text-gray-300" />
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-gray-700">Aún no hay resultados disponibles</h3>
-                <p className="text-sm text-gray-500">
-                  Cuando alguien complete la encuesta DISC, aquí aparecerán los gráficos de distribución
-                  de estilos y el mapa de calor por categoría.
+                <h3 className="mb-2 text-lg font-bold text-gray-700">Aún no hay resultados disponibles</h3>
+                <p className="text-sm text-gray-500 max-w-md mx-auto">
+                  Cuando los evaluados completen la encuesta DISC, aquí aparecerán las gráficas de distribución
+                  de estilos, patrones de equipo y mapa de calor por categorías.
                 </p>
                 {personas.length > 0 && (
-                  <p className="mt-2 text-xs text-gray-400">
-                    {personas.filter(p => !p.completado).length} persona(s) aún no han completado la encuesta.
+                  <p className="mt-4 text-xs font-semibold text-amber-600 bg-amber-50 inline-block px-3 py-1 rounded-full">
+                    {personas.filter(p => !p.completado).length} evaluado(s) pendientes por finalizar.
                   </p>
                 )}
               </div>
@@ -259,146 +782,709 @@ export default function DashboardCliente({
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-            <table className="w-full min-w-[760px] text-sm">
-              <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                <tr>
-                  <th className="px-4 py-3">Nombre</th>
-                  <th className="px-4 py-3">Correo</th>
-                  <th className="px-4 py-3">Lugar</th>
-                  <th className="px-4 py-3">Equipo</th>
-                  <th className="px-4 py-3">Estado</th>
-                  <th className="px-4 py-3">Perfil</th>
-                  <th className="px-3 py-3 text-right text-xs">D</th>
-                  <th className="px-3 py-3 text-right text-xs">I</th>
-                  <th className="px-3 py-3 text-right text-xs">S</th>
-                  <th className="px-3 py-3 text-right text-xs">C</th>
-                  <th className="px-3 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {paginadas.map((p) => (
-                  <tr key={p.user_id} className="transition-colors hover:bg-gray-50/50">
-                    <td className="px-4 py-3 font-medium text-gray-900">
-                      {p.perfiles?.[0]?.nombre || 'Sin nombre'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500" title={p.perfiles?.[0]?.correo}>
-                      {p.perfiles?.[0]?.correo || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">
-                      {p.perfiles?.[0]?.lugar || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">
-                      {p.perfiles?.[0]?.equipo || '—'}
-                    </td>
-                    <td className="px-5 py-3">
-                      {p.completado ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-                          <Check className="h-3 w-3 flex-shrink-0" />
-                          Completado
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700">
-                          <Clock className="h-3 w-3 flex-shrink-0" />
-                          Pendiente
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3">
-                      {p.completado && p.estilo_principal ? (
-                        <span
-                          className="inline-flex items-center rounded-full px-2 py-1 text-xs font-bold text-white shadow-sm"
-                          style={{ backgroundColor: COLOR_ESTILO[p.estilo_principal] }}
-                        >
-                          {p.perfil_combinado}
-                        </span>
-                      ) : (
-                        <span className="text-gray-300">—</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.D }}>
-                      {p.d_global ?? <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.I }}>
-                      {p.i_global ?? <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.S }}>
-                      {p.s_global ?? <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="px-3 py-3 tabular-nums" style={{ color: COLOR_ESTILO.C }}>
-                      {p.c_global ?? <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      {p.completado ? (
-                        <Link
-                          href={`/dashboard/${p.user_id}`}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-[#1F4E79]"
-                          title="Ver detalle"
-                        >
-                          <Eye className="h-5 w-5" />
-                        </Link>
-                      ) : (
-                        <span className="inline-flex h-8 w-8 items-center justify-center text-gray-200" title="Sin resultado">
-                          <Eye className="h-5 w-5" />
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                {paginadas.length === 0 && (
-                <tr>
-                  <td colSpan={11} className="px-5 py-10 text-center text-gray-400">
-                    {personas.length === 0
-                      ? 'Aún no hay usuarios registrados.'
-                      : 'Nadie coincide con este filtro todavía.'}
-                  </td>
-                </tr>
-                )}
-              </tbody>
-            </table>
-            
-            {/* Paginación */}
-            {totalPaginas > 1 && (
-              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Mostrando <span className="font-medium">{(paginaActual - 1) * REGISTROS_POR_PAGINA + 1}</span> a{' '}
-                      <span className="font-medium">
-                        {Math.min(paginaActual * REGISTROS_POR_PAGINA, filtradas.length)}
-                      </span>{' '}
-                      de <span className="font-medium">{filtradas.length}</span> resultados
-                    </p>
+          /* ========================================================================= */
+          /* TAB 3: GESTIÓN DE USUARIOS (CRUD Y ADMINISTRACIÓN)                         */
+          /* ========================================================================= */
+          <div className="space-y-6">
+
+            {/* Barra Unificada: Acciones + Filtros + Exportar */}
+            <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-black/5">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative flex-1 min-w-[180px]">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Search className="h-4 w-4 text-gray-400" />
                   </div>
-                  <div>
-                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                      <button
-                        onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
-                        disabled={paginaActual === 1}
-                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="sr-only">Anterior</span>
-                <ChevronLeft className="h-5 w-5" />
-                      </button>
-                      <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
-                        {paginaActual} de {totalPaginas}
-                      </span>
-                      <button
-                        onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))}
-                        disabled={paginaActual === totalPaginas}
-                        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="sr-only">Siguiente</span>
-                <ChevronRight className="h-5 w-5" />
-                      </button>
-                    </nav>
+                  <input
+                    value={busquedaUsuarios}
+                    onChange={(e) => { setBusquedaUsuarios(e.target.value); setPaginaUsuarios(1) }}
+                    placeholder="Buscar nombre, cédula, correo…"
+                    className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none focus:ring-1 focus:ring-[#1F4E79]"
+                  />
+                </div>
+
+                <select
+                  value={filtroDepartamentoUsuarios}
+                  onChange={(e) => { setFiltroDepartamentoUsuarios(e.target.value); setFiltroDependenciaUsuarios('todos'); setPaginaUsuarios(1) }}
+                  className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm text-black truncate max-w-[155px]"
+                >
+                  <option value="todos">Depto (Todos)</option>
+                  {departamentosUnicosUsuarios.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filtroDependenciaUsuarios}
+                  onChange={(e) => { setFiltroDependenciaUsuarios(e.target.value); setPaginaUsuarios(1) }}
+                  className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm text-black truncate max-w-[165px]"
+                >
+                  <option value="todos">Depend. (Todas)</option>
+                  {dependenciasUnicasUsuarios.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={() => {
+                    setBusquedaUsuarios('')
+                    setFiltroDepartamentoUsuarios('todos')
+                    setFiltroDependenciaUsuarios('todos')
+                    setPaginaUsuarios(1)
+                  }}
+                  className="whitespace-nowrap rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                >
+                  Limpiar
+                </button>
+
+                <button
+                  onClick={exportarUsuarios}
+                  disabled={exportandoUsuarios || usuariosFiltrados.length === 0}
+                  className="whitespace-nowrap inline-flex items-center gap-1.5 rounded-lg border border-[#1F4E79] bg-white px-3 py-2 text-sm font-bold text-[#1F4E79] shadow-sm transition hover:bg-blue-50 disabled:opacity-50"
+                  title="Exportar usuarios"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+
+                <div className="hidden md:block w-px h-7 bg-gray-200 mx-0.5" />
+
+                <button
+                  onClick={() => {
+                    setFormDataCrear(INITIAL_FORM)
+                    setMsgCrear(null)
+                    setMostrarModalCrear(true)
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#1F4E79] px-3.5 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#173A5C]"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Registrar
+                </button>
+
+                <button
+                  onClick={() => {
+                    setResultadoCarga(null)
+                    setArchivoCarga(null)
+                    setMostrarModalCarga(true)
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#1F4E79] px-3.5 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#173A5C]"
+                >
+                  <FileUp className="h-4 w-4" />
+                  Subir Excel
+                </button>
+
+                <button
+                  onClick={cargarUsuarios}
+                  disabled={cargandoUsuarios}
+                  className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:opacity-50"
+                  title="Actualizar directorio"
+                >
+                  <RefreshCw className={`h-4 w-4 ${cargandoUsuarios ? 'animate-spin' : ''}`} />
+                </button>
+
+                <p className="text-xs text-gray-500 font-medium ml-auto pl-2 border-l border-gray-200">
+                  {usuariosFiltrados.length} usuario(s) registrados
+                </p>
+              </div>
+            </div>
+
+            {/* Tabla Completa de Administración de Usuarios */}
+            <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+              <table className="w-full min-w-[960px] text-sm">
+                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3.5">Nombre y Apellidos</th>
+                    <th className="px-4 py-3.5">Cédula / Documento</th>
+                    <th className="px-4 py-3.5">Correo electrónico</th>
+                    <th className="px-4 py-3.5">Teléfono</th>
+                    <th className="px-4 py-3.5">Departamento</th>
+                    <th className="px-4 py-3.5 min-w-[200px]">Dependencia</th>
+                    <th className="px-4 py-3.5">Fecha Registro</th>
+                    <th className="px-4 py-3.5 text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {cargandoUsuarios ? (
+                    <tr>
+                      <td colSpan={8} className="px-5 py-12 text-center text-gray-400">
+                        <div className="inline-block h-7 w-7 animate-spin rounded-full border-3 border-[#EA580C] border-t-transparent" />
+                        <p className="mt-2 text-sm font-medium">Cargando base de datos de usuarios…</p>
+                      </td>
+                    </tr>
+                  ) : usuariosPaginados.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-5 py-12 text-center text-gray-400">
+                        {usuariosRegistrados.length === 0
+                          ? 'No hay usuarios registrados aún. Utiliza el botón "Registrar Usuario" o "Subir Excel / CSV".'
+                          : 'Ningún usuario coincide con los filtros aplicados.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    usuariosPaginados.map((u) => {
+                      const nombreCompleto = [u.nombre, u.primer_apellido, u.segundo_apellido].filter(Boolean).join(' ') || 'Sin nombre'
+                      return (
+                        <tr key={u.id} className="transition-colors hover:bg-gray-50/70">
+                          <td className="px-4 py-3.5 font-medium text-gray-900">
+                            {nombreCompleto}
+                          </td>
+                          <td className="px-4 py-3.5 text-gray-600 font-mono text-xs">
+                            {u.cedula || '—'}
+                          </td>
+                          <td className="px-4 py-3.5 text-gray-600 max-w-[200px] truncate" title={u.correo}>
+                            {u.correo || '—'}
+                          </td>
+                          <td className="px-4 py-3.5 text-gray-600 tabular-nums text-xs">
+                            {u.telefono || '—'}
+                          </td>
+                          <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap text-xs">
+                            {u.departamento || '—'}
+                          </td>
+                          <td className="px-4 py-3.5 text-gray-600 min-w-[200px] max-w-[280px] whitespace-normal break-words leading-snug text-xs">
+                            {u.dependencia_funciones || '—'}
+                          </td>
+                          <td className="px-4 py-3.5 text-gray-400 text-xs tabular-nums whitespace-nowrap">
+                            {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CO') : '—'}
+                          </td>
+                          <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                onClick={() => abrirEditar(u)}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#1F4E79] hover:bg-blue-50 transition"
+                                title="Editar datos del usuario"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => setUsuarioEliminar(u)}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-600 hover:bg-red-50 transition"
+                                title="Eliminar usuario"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+
+              {/* Paginación de Usuarios */}
+              {totalPaginasUsuarios > 1 && (
+                <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+                  <p className="text-sm text-gray-700">
+                    Mostrando <span className="font-semibold">{(paginaUsuarios - 1) * USUARIOS_POR_PAGINA + 1}</span> a{' '}
+                    <span className="font-semibold">
+                      {Math.min(paginaUsuarios * USUARIOS_POR_PAGINA, usuariosFiltrados.length)}
+                    </span>{' '}
+                    de <span className="font-semibold">{usuariosFiltrados.length}</span> usuarios
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPaginaUsuarios(p => Math.max(1, p - 1))}
+                      disabled={paginaUsuarios === 1}
+                      className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                    </button>
+                    <span className="text-sm font-medium text-gray-700 px-2">
+                      {paginaUsuarios} / {totalPaginasUsuarios}
+                    </span>
+                    <button
+                      onClick={() => setPaginaUsuarios(p => Math.min(totalPaginasUsuarios, p + 1))}
+                      disabled={paginaUsuarios === totalPaginasUsuarios}
+                      className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+                    </button>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
       </div>
+
+      {/* ========================================================================= */}
+      {/* MODAL 1: REGISTRAR NUEVO USUARIO                                         */}
+      {/* ========================================================================= */}
+      {mostrarModalCrear && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/10 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <div>
+                <h3 className="text-lg font-bold text-[#1F2937]">Registrar Nuevo Usuario</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  La contraseña inicial será el número de cédula. Podrá ingresar inmediatamente.
+                </p>
+              </div>
+              <button
+                onClick={() => setMostrarModalCrear(false)}
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {msgCrear && (
+              <div className={`mt-4 flex items-center gap-2 rounded-lg p-3 text-sm ${msgCrear.tipo === 'ok' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                {msgCrear.tipo === 'ok'
+                  ? <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                  : <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />}
+                <span>{msgCrear.texto}</span>
+              </div>
+            )}
+
+            <form onSubmit={crearUsuario} className="mt-4 space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Nombres <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    value={formDataCrear.nombres}
+                    onChange={(e) => setFormDataCrear({ ...formDataCrear, nombres: e.target.value.toUpperCase() })}
+                    placeholder="JUAN CARLOS"
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Primer Apellido</label>
+                  <input
+                    value={formDataCrear.primer_apellido}
+                    onChange={(e) => setFormDataCrear({ ...formDataCrear, primer_apellido: e.target.value.toUpperCase() })}
+                    placeholder="PÉREZ"
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Segundo Apellido</label>
+                  <input
+                    value={formDataCrear.segundo_apellido}
+                    onChange={(e) => setFormDataCrear({ ...formDataCrear, segundo_apellido: e.target.value.toUpperCase() })}
+                    placeholder="GÓMEZ"
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Cédula <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    value={formDataCrear.cedula}
+                    onChange={(e) => setFormDataCrear({ ...formDataCrear, cedula: e.target.value })}
+                    placeholder="1020304050"
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Correo Electrónico <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    type="email"
+                    value={formDataCrear.correo}
+                    onChange={(e) => setFormDataCrear({ ...formDataCrear, correo: e.target.value })}
+                    placeholder="usuario@procuraduria.gov.co"
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={formDataCrear.telefono}
+                    onChange={(e) => setFormDataCrear({ ...formDataCrear, telefono: e.target.value })}
+                    placeholder="300 123 4567"
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Departamento</label>
+                  <select
+                    value={formDataCrear.departamento}
+                    onChange={(e) => setFormDataCrear({ ...formDataCrear, departamento: e.target.value.toUpperCase() })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
+                  >
+                    <option value="">Selecciona...</option>
+                    {Array.from(new Set(usuariosRegistrados.map(u => u.departamento).filter(Boolean))).sort().map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                    {!Array.from(new Set(usuariosRegistrados.map(u => u.departamento).filter(Boolean))).includes(formDataCrear.departamento) && formDataCrear.departamento !== '' && (
+                      <option value={formDataCrear.departamento}>{formDataCrear.departamento}</option>
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Dependencia / Funciones</label>
+                  <select
+                    value={formDataCrear.dependencia_funciones}
+                    onChange={(e) => setFormDataCrear({ ...formDataCrear, dependencia_funciones: e.target.value.toUpperCase() })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
+                  >
+                    <option value="">Selecciona...</option>
+                    {Array.from(new Set(usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean))).sort().map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                    {!Array.from(new Set(usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean))).includes(formDataCrear.dependencia_funciones) && formDataCrear.dependencia_funciones !== '' && (
+                      <option value={formDataCrear.dependencia_funciones}>{formDataCrear.dependencia_funciones}</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setMostrarModalCrear(false)}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardandoCrear}
+                  className="rounded-lg bg-[#1F4E79] px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-[#173A5C] disabled:opacity-50"
+                >
+                  {guardandoCrear ? 'Registrando…' : 'Crear Usuario'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 2: EDITAR DATOS PERSONALES DE USUARIO                               */}
+      {/* ========================================================================= */}
+      {usuarioEditar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/10 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <div>
+                <h3 className="text-lg font-bold text-[#1F2937]">Editar Datos Personales</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Actualiza la información del usuario en el sistema.
+                </p>
+              </div>
+              <button
+                onClick={() => setUsuarioEditar(null)}
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {msgEditar && (
+              <div className={`mt-4 flex items-center gap-2 rounded-lg p-3 text-sm ${msgEditar.tipo === 'ok' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                {msgEditar.tipo === 'ok'
+                  ? <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                  : <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />}
+                <span>{msgEditar.texto}</span>
+              </div>
+            )}
+
+            <form onSubmit={guardarEdicion} className="mt-4 space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Nombres <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    value={formDataEditar.nombres}
+                    onChange={(e) => setFormDataEditar({ ...formDataEditar, nombres: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Primer Apellido</label>
+                  <input
+                    value={formDataEditar.primer_apellido}
+                    onChange={(e) => setFormDataEditar({ ...formDataEditar, primer_apellido: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Segundo Apellido</label>
+                  <input
+                    value={formDataEditar.segundo_apellido}
+                    onChange={(e) => setFormDataEditar({ ...formDataEditar, segundo_apellido: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Cédula <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    value={formDataEditar.cedula}
+                    onChange={(e) => setFormDataEditar({ ...formDataEditar, cedula: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Correo Electrónico <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    type="email"
+                    value={formDataEditar.correo}
+                    onChange={(e) => setFormDataEditar({ ...formDataEditar, correo: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={formDataEditar.telefono}
+                    onChange={(e) => setFormDataEditar({ ...formDataEditar, telefono: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Departamento</label>
+                  <select
+                    value={formDataEditar.departamento}
+                    onChange={(e) => setFormDataEditar({ ...formDataEditar, departamento: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                  >
+                    <option value="">Selecciona...</option>
+                    {Array.from(new Set(usuariosRegistrados.map(u => u.departamento).filter(Boolean))).sort().map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                    {!Array.from(new Set(usuariosRegistrados.map(u => u.departamento).filter(Boolean))).includes(formDataEditar.departamento) && formDataEditar.departamento !== '' && (
+                      <option value={formDataEditar.departamento}>{formDataEditar.departamento}</option>
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Dependencia / Funciones</label>
+                  <select
+                    value={formDataEditar.dependencia_funciones}
+                    onChange={(e) => setFormDataEditar({ ...formDataEditar, dependencia_funciones: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                  >
+                    <option value="">Selecciona...</option>
+                    {Array.from(new Set(usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean))).sort().map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                    {!Array.from(new Set(usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean))).includes(formDataEditar.dependencia_funciones) && formDataEditar.dependencia_funciones !== '' && (
+                      <option value={formDataEditar.dependencia_funciones}>{formDataEditar.dependencia_funciones}</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setUsuarioEditar(null)}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardandoEditar}
+                  className="rounded-lg bg-[#1F4E79] px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-[#173A5C] disabled:opacity-50"
+                >
+                  {guardandoEditar ? 'Guardando…' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 3: CONFIRMAR ELIMINACIÓN DE USUARIO                                */}
+      {/* ========================================================================= */}
+      {usuarioEliminar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/10">
+            <div className="flex items-center gap-3 text-red-600 mb-3">
+              <div className="rounded-full bg-red-100 p-2">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">¿Eliminar Usuario?</h3>
+            </div>
+
+            {msgEliminar && (
+              <div className={`mb-4 flex items-center gap-2 rounded-lg p-3 text-sm ${msgEliminar.tipo === 'ok' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                {msgEliminar.tipo === 'ok'
+                  ? <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                  : <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />}
+                <span>{msgEliminar.texto}</span>
+              </div>
+            )}
+
+            <p className="text-sm text-gray-600">
+              Estás a punto de eliminar a <strong className="text-gray-900">{usuarioEliminar.nombre} {usuarioEliminar.primer_apellido}</strong> ({usuarioEliminar.correo}).
+            </p>
+            <p className="mt-2 text-xs text-red-600 bg-red-50 p-2.5 rounded-lg">
+              ⚠️ Esta acción eliminará su cuenta de acceso, perfil y sus respuestas/resultados asociados de forma permanente.
+            </p>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setUsuarioEliminar(null)}
+                disabled={eliminandoUsuario}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarEliminar}
+                disabled={eliminandoUsuario}
+                className="rounded-lg bg-red-600 px-5 py-2 text-sm font-bold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+              >
+                {eliminandoUsuario ? 'Eliminando…' : 'Sí, Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 4: CARGA MASIVA DE USUARIOS (EXCEL / CSV)                           */}
+      {/* ========================================================================= */}
+      {mostrarModalCarga && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/10 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="rounded-lg bg-blue-100 p-2 text-[#1F4E79]">
+                  <FileSpreadsheet className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-[#1F2937]">Carga Masiva de Usuarios (Excel / CSV)</h3>
+                  <p className="text-xs text-gray-500">
+                    Importa múltiples usuarios a la vez mediante un archivo de hoja de cálculo.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setMostrarModalCarga(false)}
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Estructura Requerida */}
+            <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+              <div className="flex items-start gap-2">
+                <Info className="h-5 w-5 text-[#1F4E79] flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-gray-700">
+                  <p className="font-bold text-[#1F4E79] text-sm mb-1">Estructura requerida del archivo Excel</p>
+                  <p className="mb-2">
+                    El archivo debe incluir en la primera fila los siguientes encabezados (las columnas obligatorias son requeridas para crear la cuenta):
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-[11px] bg-white p-2.5 rounded-lg border border-blue-100">
+                    <div><span className="text-red-600 font-bold">*</span> <strong>Nombres</strong></div>
+                    <div>Primer Apellido</div>
+                    <div>Segundo Apellido</div>
+                    <div><span className="text-red-600 font-bold">*</span> <strong>Cédula</strong></div>
+                    <div><span className="text-red-600 font-bold">*</span> <strong>Correo</strong></div>
+                    <div>Teléfono</div>
+                    <div>Departamento</div>
+                    <div>Dependencia Funciones</div>
+                  </div>
+                  <p className="mt-2 text-gray-600">
+                    ℹ️ <strong>Contraseña inicial:</strong> La contraseña asignada a cada usuario para ingresar será su número de <strong>Cédula</strong>.
+                  </p>
+                </div>
+              </div>
+
+              {/* Botón Descargar Plantilla */}
+              <div className="mt-3 flex justify-end">
+                <a
+                  href="/api/admin/users/plantilla"
+                  download="plantilla_carga_usuarios.xlsx"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-[#1F4E79] px-3.5 py-1.5 text-xs font-bold text-[#1F4E79] shadow-xs hover:bg-blue-50 transition"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Descargar Plantilla Modelo (.xlsx)
+                </a>
+              </div>
+            </div>
+
+            {/* Formulario de Subida */}
+            <form onSubmit={procesarCargaMasiva} className="mt-5 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Selecciona el archivo Excel (.xlsx, .xls) o .csv:
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx, .xls, .csv"
+                  onChange={(e) => setArchivoCarga(e.target.files?.[0] || null)}
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#1F4E79] file:text-white hover:file:bg-[#173A5C] file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-1.5"
+                />
+              </div>
+
+              {/* Resultado de la carga */}
+              {resultadoCarga && (
+                <div className={`p-4 rounded-xl text-sm ${resultadoCarga.ok ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                  {resultadoCarga.ok ? (
+                    <div>
+                      <div className="flex items-center gap-2 text-green-800 font-bold mb-1">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        Carga procesada exitosamente
+                      </div>
+                      <p className="text-xs text-green-700">
+                        Total procesados: <strong>{resultadoCarga.total}</strong> | Creados: <strong>{resultadoCarga.creados}</strong> | Actualizados: <strong>{resultadoCarga.actualizados}</strong>
+                      </p>
+                      {resultadoCarga.fallidos && resultadoCarga.fallidos > 0 ? (
+                        <div className="mt-2 text-xs text-amber-800 bg-amber-50 p-2 rounded">
+                          <p className="font-semibold">Observaciones ({resultadoCarga.fallidos} filas omitidas):</p>
+                          <ul className="list-disc pl-4 mt-1 space-y-0.5 max-h-28 overflow-y-auto">
+                            {resultadoCarga.errores?.map((err, i) => (
+                              <li key={i}>{err}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-red-800">
+                      <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                      <span>{resultadoCarga.errorGeneral}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setMostrarModalCarga(false)}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="submit"
+                  disabled={!archivoCarga || cargandoArchivo}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#1F4E79] px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-[#173A5C] disabled:opacity-50"
+                >
+                  <Upload className="h-4 w-4" />
+                  {cargandoArchivo ? 'Procesando archivo…' : 'Subir e Importar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Footer Institucional */}
       <footer className="mt-16 w-full border-t border-gray-200 pt-8 pb-4 text-center">

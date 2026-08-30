@@ -54,10 +54,10 @@ export default function Home() {
 
           <div className="flex items-center gap-4 pt-2">
             <Link
-              href="/registro"
+              href="/login"
               className="rounded-lg bg-[#1F4E79] px-8 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#EA580C] hover:shadow-md"
             >
-              Registrarse y comenzar →
+              Iniciar sesión →
             </Link>
           </div>
         </div>
