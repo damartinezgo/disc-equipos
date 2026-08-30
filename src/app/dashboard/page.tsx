@@ -75,8 +75,9 @@ export default async function DashboardPage() {
     (respuestasData ?? []).map((r) => {
       const masCount = Object.keys(r.respuestas_mas || {}).length
       const menosCount = Object.keys(r.respuestas_menos || {}).length
-      const totalRespondidas = masCount + menosCount
-      const porcentaje = Math.round((totalRespondidas / 56) * 100)
+      // Cada ítem tiene una respuesta MÁS y una MENOS; el total de ítems es 32
+      const itemsRespondidos = Math.max(masCount, menosCount)
+      const porcentaje = Math.min(Math.round((itemsRespondidos / 32) * 100), 100)
       return [r.user_id, { completado: r.completado, porcentaje }]
     })
   )
