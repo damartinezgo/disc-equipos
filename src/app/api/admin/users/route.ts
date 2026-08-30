@@ -288,17 +288,21 @@ export async function DELETE(req: NextRequest) {
 
   // Clean up related tables first
   try {
-    await admin.from('respuestas').delete().eq('user_id', id)
-    await admin.from('scoring').delete().eq('user_id', id)
-    await admin.from('consentimientos').delete().eq('user_id', id)
-    await admin.from('perfiles').delete().eq('id', id)
+    await Promise.allSettled([
+      admin.from('respuestas').delete().eq('user_id', id),
+      admin.from('scoring').delete().eq('user_id', id),
+      admin.from('consentimientos').delete().eq('user_id', id),
+      admin.from('perfiles').delete().eq('id', id),
+      admin.from('perfiles').delete().eq('user_id', id),
+      admin.from('encuestadores').delete().eq('user_id', id),
+    ])
   } catch (err) {
     console.error('Error limpiando datos relacionados:', err)
   }
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(id)
 
-  if (deleteError) {
+  if (deleteError && !deleteError.message?.includes('User not found')) {
     return NextResponse.json(
       { error: deleteError.message || 'Error al eliminar usuario' },
       { status: 500 }

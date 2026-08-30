@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   BarChart3,
   Check,
@@ -104,6 +105,14 @@ export default function DashboardCliente({
 }: {
   personas: Persona[]
 }) {
+  const router = useRouter()
+  const [listaPersonas, setListaPersonas] = useState<Persona[]>(personas)
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setListaPersonas(personas)
+  }, [personas])
+
   // Tabs: 'graficos' | 'tabla' | 'usuarios'
   const [activeTab, setActiveTab] = useState<'graficos' | 'tabla' | 'usuarios'>('tabla')
 
@@ -162,6 +171,10 @@ export default function DashboardCliente({
     setCargandoUsuarios(true)
     try {
       const res = await fetch('/api/admin/users')
+      if (res.status === 401) {
+        router.push('/login?siguiente=/dashboard')
+        return
+      }
       if (res.ok) {
         const data = await res.json()
         setUsuariosRegistrados(data.usuarios ?? [])
@@ -169,7 +182,7 @@ export default function DashboardCliente({
     } finally {
       setCargandoUsuarios(false)
     }
-  }, [])
+  }, [router])
 
   useEffect(() => {
     if (activeTab === 'usuarios' && usuariosRegistrados.length === 0) {
@@ -180,19 +193,19 @@ export default function DashboardCliente({
 
   // --- FILTROS TAB RESULTADOS DISC ---
   const departamentosUnicosMain = useMemo(
-    () => Array.from(new Set(personas.map((p) => p.perfiles?.[0]?.departamento).filter(Boolean))).sort() as string[],
-    [personas]
+    () => Array.from(new Set(listaPersonas.map((p) => p.perfiles?.[0]?.departamento).filter(Boolean))).sort() as string[],
+    [listaPersonas]
   )
 
   const dependenciasUnicasMain = useMemo(() => {
     const base = filtroDepto === 'todos'
-      ? personas
-      : personas.filter((p) => p.perfiles?.[0]?.departamento === filtroDepto)
+      ? listaPersonas
+      : listaPersonas.filter((p) => p.perfiles?.[0]?.departamento === filtroDepto)
     return Array.from(new Set(base.map((p) => p.perfiles?.[0]?.dependencia_funciones).filter(Boolean))).sort() as string[]
-  }, [personas, filtroDepto])
+  }, [listaPersonas, filtroDepto])
 
   const filtradas = useMemo(() => {
-    return personas.filter((p) => {
+    return listaPersonas.filter((p) => {
       const perf = p.perfiles?.[0]
       const depto = perf?.departamento ?? ''
       const dep = perf?.dependencia_funciones ?? ''
@@ -213,12 +226,12 @@ export default function DashboardCliente({
       }
       return true
     })
-  }, [personas, filtroDepto, filtroDependencia, filtroEstilo, filtroEstado, busqueda])
+  }, [listaPersonas, filtroDepto, filtroDependencia, filtroEstilo, filtroEstado, busqueda])
 
   const conScoring = filtradas.filter((p) => p.completado)
-  const totalCompletados = personas.filter((p) => p.completado).length
-  const pctCompletado = personas.length
-    ? Math.round((totalCompletados / personas.length) * 100)
+  const totalCompletados = listaPersonas.filter((p) => p.completado).length
+  const pctCompletado = listaPersonas.length
+    ? Math.round((totalCompletados / listaPersonas.length) * 100)
     : 0
 
   const totalPaginas = Math.ceil(filtradas.length / REGISTROS_POR_PAGINA)
@@ -277,6 +290,10 @@ export default function DashboardCliente({
           userIds: filtradas.map((p) => p.user_id),
         }),
       })
+      if (res.status === 401) {
+        router.push('/login?siguiente=/dashboard')
+        return
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({ error: 'Error al exportar resultados' }))
         alert(data.error || 'Error al exportar resultados DISC')
@@ -305,6 +322,10 @@ export default function DashboardCliente({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userIds: usuariosFiltrados.map(u => u.id) }),
       })
+      if (res.status === 401) {
+        router.push('/login?siguiente=/dashboard')
+        return
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({ error: 'Error al exportar' }))
         alert(data.error || 'Error al exportar usuarios')
@@ -340,6 +361,10 @@ export default function DashboardCliente({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formDataCrear),
       })
+      if (res.status === 401) {
+        router.push('/login?siguiente=/dashboard')
+        return
+      }
       const data = await res.json()
       if (!res.ok) {
         setMsgCrear({ tipo: 'error', texto: data.error || 'Error al crear usuario' })
@@ -348,6 +373,7 @@ export default function DashboardCliente({
       setMsgCrear({ tipo: 'ok', texto: `Usuario creado exitosamente (${formDataCrear.correo})` })
       setFormDataCrear(INITIAL_FORM)
       cargarUsuarios()
+      router.refresh()
       setTimeout(() => {
         setMostrarModalCrear(false)
         setMsgCrear(null)
@@ -390,6 +416,10 @@ export default function DashboardCliente({
           ...formDataEditar,
         }),
       })
+      if (res.status === 401) {
+        router.push('/login?siguiente=/dashboard')
+        return
+      }
       const data = await res.json()
       if (!res.ok) {
         setMsgEditar({ tipo: 'error', texto: data.error || 'Error al actualizar usuario' })
@@ -397,6 +427,7 @@ export default function DashboardCliente({
       }
       setMsgEditar({ tipo: 'ok', texto: 'Datos actualizados correctamente' })
       cargarUsuarios()
+      router.refresh()
       setTimeout(() => {
         setUsuarioEditar(null)
         setMsgEditar(null)
@@ -417,13 +448,19 @@ export default function DashboardCliente({
       const res = await fetch(`/api/admin/users?id=${usuarioEliminar.id}`, {
         method: 'DELETE',
       })
+      if (res.status === 401) {
+        router.push('/login?siguiente=/dashboard')
+        return
+      }
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         setMsgEliminar({ tipo: 'error', texto: data.error || 'Error al eliminar usuario' })
         return
       }
       setMsgEliminar({ tipo: 'ok', texto: `Usuario ${usuarioEliminar.nombre || ''} eliminado exitosamente` })
+      setListaPersonas((prev) => prev.filter((p) => p.user_id !== usuarioEliminar.id))
       cargarUsuarios()
+      router.refresh()
       setTimeout(() => {
         setUsuarioEliminar(null)
         setMsgEliminar(null)
@@ -449,6 +486,10 @@ export default function DashboardCliente({
         method: 'POST',
         body: formData,
       })
+      if (res.status === 401) {
+        router.push('/login?siguiente=/dashboard')
+        return
+      }
       const data = await res.json()
       if (!res.ok) {
         setResultadoCarga({
@@ -466,6 +507,7 @@ export default function DashboardCliente({
         errores: data.errores,
       })
       cargarUsuarios()
+      router.refresh()
       if (fileInputRef.current) fileInputRef.current.value = ''
       setArchivoCarga(null)
     } catch {
@@ -488,7 +530,7 @@ export default function DashboardCliente({
             Resultados — Desarrollo de Líderes y Equipos
           </h1>
           <p className="text-sm text-gray-500 whitespace-nowrap">
-            {personas.length} personas evaluadas
+            {listaPersonas.length} personas evaluadas
             {' · '}
             <span className="font-semibold text-[#00843D]">
               {totalCompletados} completaron ({pctCompletado}%)
@@ -710,7 +752,7 @@ export default function DashboardCliente({
                   {paginadas.length === 0 && (
                     <tr>
                       <td colSpan={10} className="px-5 py-12 text-center text-gray-400">
-                        {personas.length === 0
+                        {listaPersonas.length === 0
                           ? 'Aún no hay usuarios en el sistema.'
                           : 'No se encontraron personas con los filtros seleccionados.'}
                       </td>
@@ -767,9 +809,9 @@ export default function DashboardCliente({
                   Cuando los evaluados completen la encuesta DISC, aquí aparecerán las gráficas de distribución
                   de estilos, patrones de equipo y mapa de calor por categorías.
                 </p>
-                {personas.length > 0 && (
+                {listaPersonas.length > 0 && (
                   <p className="mt-4 text-xs font-semibold text-amber-600 bg-amber-50 inline-block px-3 py-1 rounded-full">
-                    {personas.filter(p => !p.completado).length} evaluado(s) pendientes por finalizar.
+                    {listaPersonas.filter(p => !p.completado).length} evaluado(s) pendientes por finalizar.
                   </p>
                 )}
               </div>

@@ -84,10 +84,12 @@ export default async function DashboardPage() {
     (scoringData ?? []).map((s) => [s.user_id, s])
   )
 
+  const authUserIds = new Set(authUsers.map((u) => u.id))
+
   // Combinar: parte de perfiles, añade estado + scoring.
-  // Se excluyen usuarios admin (is_admin=true) — no participan en la encuesta.
+  // Se excluyen usuarios eliminados de Auth y usuarios admin (is_admin=true).
   const personas = (perfilesData ?? [])
-    .filter((p) => !adminIds.has(p.id))
+    .filter((p) => authUserIds.has(p.id) && !adminIds.has(p.id))
     .map((p) => {
       const scoring = scoringMap.get(p.id)
       const respData = respuestasMap.get(p.id)
