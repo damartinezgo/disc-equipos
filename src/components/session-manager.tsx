@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client'
 import { AlertCircle } from '@/lib/icons'
 
 export default function SessionManager() {
-  const supabase = createClient()
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
