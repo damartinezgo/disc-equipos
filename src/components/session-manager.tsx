@@ -29,7 +29,7 @@ export default function SessionManager() {
           if (
             pathname.startsWith('/dashboard') ||
             pathname.startsWith('/carga') ||
-            pathname.startsWith('/encuesta')
+            (pathname.startsWith('/encuesta') && !pathname.startsWith('/encuesta/gracias'))
           ) {
             sessionStorage.setItem('redirect_after_login', pathname)
             setTargetPath(destino)

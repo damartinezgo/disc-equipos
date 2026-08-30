@@ -66,8 +66,11 @@ export default function GraciasContent() {
 
       setGuardadoExitoso(true)
       setTimeout(async () => {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('just_logout', 'true')
+        }
         const supabase = createClient()
-        await supabase.auth.signOut()
+        await supabase.auth.signOut().catch(() => {})
         if (typeof window !== 'undefined') {
           localStorage.clear()
           sessionStorage.clear()
