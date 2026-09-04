@@ -166,6 +166,21 @@ export default function DashboardCliente({
   } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Catálogo maestro de dependencias (tabla `equipos`)
+  const [catalogoDependencias, setCatalogoDependencias] = useState<string[]>([])
+
+  useEffect(() => {
+    let cancelado = false
+    fetch('/api/equipos')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: Array<{ nombre: string }>) => {
+        if (cancelado) return
+        setCatalogoDependencias(Array.from(new Set(data.map((e) => e.nombre))).sort())
+      })
+      .catch(() => {})
+    return () => { cancelado = true }
+  }, [])
+
   // Carga inicial de usuarios
   const cargarUsuarios = useCallback(async () => {
     setCargandoUsuarios(true)
@@ -1168,10 +1183,10 @@ export default function DashboardCliente({
                     className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
                   >
                     <option value="">Selecciona...</option>
-                    {Array.from(new Set(usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean))).sort().map((d) => (
+                    {Array.from(new Set([...catalogoDependencias, ...usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean)])).sort().map((d) => (
                       <option key={d} value={d}>{d}</option>
                     ))}
-                    {!Array.from(new Set(usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean))).includes(formDataCrear.dependencia_funciones) && formDataCrear.dependencia_funciones !== '' && (
+                    {!catalogoDependencias.includes(formDataCrear.dependencia_funciones) && !usuariosRegistrados.some(u => u.dependencia_funciones === formDataCrear.dependencia_funciones) && formDataCrear.dependencia_funciones !== '' && (
                       <option value={formDataCrear.dependencia_funciones}>{formDataCrear.dependencia_funciones}</option>
                     )}
                   </select>
@@ -1314,10 +1329,10 @@ export default function DashboardCliente({
                     className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
                   >
                     <option value="">Selecciona...</option>
-                    {Array.from(new Set(usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean))).sort().map((d) => (
+                    {Array.from(new Set([...catalogoDependencias, ...usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean)])).sort().map((d) => (
                       <option key={d} value={d}>{d}</option>
                     ))}
-                    {!Array.from(new Set(usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean))).includes(formDataEditar.dependencia_funciones) && formDataEditar.dependencia_funciones !== '' && (
+                    {!catalogoDependencias.includes(formDataEditar.dependencia_funciones) && !usuariosRegistrados.some(u => u.dependencia_funciones === formDataEditar.dependencia_funciones) && formDataEditar.dependencia_funciones !== '' && (
                       <option value={formDataEditar.dependencia_funciones}>{formDataEditar.dependencia_funciones}</option>
                     )}
                   </select>
