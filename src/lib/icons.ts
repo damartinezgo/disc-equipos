@@ -32,4 +32,5 @@ export { default as HelpCircle } from 'lucide-react/dist/esm/icons/help-circle.m
 export { default as Info } from 'lucide-react/dist/esm/icons/info.mjs'
 export { default as RefreshCw } from 'lucide-react/dist/esm/icons/refresh-cw.mjs'
 export { default as FileUp } from 'lucide-react/dist/esm/icons/file-up.mjs'
+export { default as Building2 } from 'lucide-react/dist/esm/icons/building-2.mjs'
 export type { LucideIcon, LucideProps } from 'lucide-react'

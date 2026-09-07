@@ -24,6 +24,8 @@ import {
   RefreshCw,
   FileUp,
   Info,
+  Building2,
+  Plus,
 } from '@/lib/icons'
 import GraficosDashboard from './graficos-dashboard'
 import MapaCalor from './mapa-calor'
@@ -34,6 +36,14 @@ const COLOR_ESTILO: Record<string, string> = {
   S: '#D9A300',
   C: '#00843D',
 }
+const DEPARTAMENTOS_COLOMBIA = [
+  'AMAZONAS', 'ANTIOQUIA', 'ARAUCA', 'ATLÁNTICO', 'BOLÍVAR', 'BOYACÁ', 'CALDAS', 'CAQUETÁ',
+  'CASANARE', 'CAUCA', 'CESAR', 'CHOCÓ', 'CÓRDOBA', 'CUNDINAMARCA', 'GUAINÍA', 'GUAVIARE',
+  'HUILA', 'LA GUAJIRA', 'MAGDALENA', 'META', 'NARIÑO', 'NORTE DE SANTANDER', 'PUTUMAYO',
+  'QUINDÍO', 'RISARALDA', 'SAN ANDRÉS Y PROVIDENCIA', 'SANTANDER', 'SUCRE', 'TOLIMA',
+  'VALLE DEL CAUCA', 'VAUPÉS', 'VICHADA',
+]
+
 const NOMBRE_ESTILO: Record<string, string> = {
   D: 'Dominancia',
   I: 'Influencia',
@@ -169,17 +179,133 @@ export default function DashboardCliente({
   // Catálogo maestro de dependencias (tabla `equipos`)
   const [catalogoDependencias, setCatalogoDependencias] = useState<string[]>([])
 
-  useEffect(() => {
-    let cancelado = false
+  const cargarCatalogoDependencias = useCallback(() => {
     fetch('/api/equipos')
       .then((res) => (res.ok ? res.json() : []))
       .then((data: Array<{ nombre: string }>) => {
-        if (cancelado) return
         setCatalogoDependencias(Array.from(new Set(data.map((e) => e.nombre))).sort())
       })
       .catch(() => {})
-    return () => { cancelado = true }
   }, [])
+
+  useEffect(() => {
+    cargarCatalogoDependencias()
+  }, [cargarCatalogoDependencias])
+
+  // --- GESTIÓN RÁPIDA DE DEPENDENCIA (desde los modales de usuario, botón "+") ---
+  type DependenciaCatalogo = { id: number; nombre: string; departamento: string | null }
+  // null = cerrado, 'crear' | 'editar' = a qué formulario de usuario debe volcarse la dependencia elegida/creada
+  const [altaDependenciaPara, setAltaDependenciaPara] = useState<'crear' | 'editar' | null>(null)
+  const [modoGestionDep, setModoGestionDep] = useState<'crear' | 'existente'>('crear')
+  const [nuevaDepForm, setNuevaDepForm] = useState({ nombre: '', departamento: '' })
+  const [guardandoNuevaDep, setGuardandoNuevaDep] = useState(false)
+  const [eliminandoDepRapida, setEliminandoDepRapida] = useState(false)
+  const [msgNuevaDep, setMsgNuevaDep] = useState<string | null>(null)
+
+  const [catalogoCompletoDep, setCatalogoCompletoDep] = useState<DependenciaCatalogo[]>([])
+  const [depSeleccionada, setDepSeleccionada] = useState<DependenciaCatalogo | null>(null)
+  const [confirmarEliminarDep, setConfirmarEliminarDep] = useState(false)
+
+  const abrirGestionDependencia = (para: 'crear' | 'editar') => {
+    setAltaDependenciaPara(para)
+    setModoGestionDep('crear')
+    setNuevaDepForm({ nombre: '', departamento: '' })
+    setDepSeleccionada(null)
+    setConfirmarEliminarDep(false)
+    setMsgNuevaDep(null)
+    fetch('/api/admin/dependencias')
+      .then((res) => (res.ok ? res.json() : { dependencias: [] }))
+      .then((data) => setCatalogoCompletoDep(data.dependencias ?? []))
+      .catch(() => {})
+  }
+
+  const seleccionarDependenciaExistente = (nombre: string) => {
+    const dep = catalogoCompletoDep.find((d) => d.nombre === nombre) || null
+    setDepSeleccionada(dep)
+    setConfirmarEliminarDep(false)
+    if (dep) setNuevaDepForm({ nombre: dep.nombre, departamento: dep.departamento || '' })
+  }
+
+  const aplicarDependenciaAlFormulario = (nombre: string, departamento: string) => {
+    if (altaDependenciaPara === 'crear') {
+      setFormDataCrear((f) => ({ ...f, dependencia_funciones: nombre, departamento: departamento || f.departamento }))
+    } else if (altaDependenciaPara === 'editar') {
+      setFormDataEditar((f) => ({ ...f, dependencia_funciones: nombre, departamento: departamento || f.departamento }))
+    }
+  }
+
+  const handleCrearDependenciaRapida = async () => {
+    setGuardandoNuevaDep(true)
+    setMsgNuevaDep(null)
+    try {
+      const res = await fetch('/api/admin/dependencias', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nuevaDepForm.nombre, departamento: nuevaDepForm.departamento }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setMsgNuevaDep(data.error || 'Error al crear la dependencia')
+        return
+      }
+      cargarCatalogoDependencias()
+      aplicarDependenciaAlFormulario(data.dependencia.nombre, nuevaDepForm.departamento)
+      setNuevaDepForm({ nombre: '', departamento: '' })
+      setAltaDependenciaPara(null)
+    } catch {
+      setMsgNuevaDep('Error de conexión')
+    } finally {
+      setGuardandoNuevaDep(false)
+    }
+  }
+
+  const handleActualizarDependenciaRapida = async () => {
+    if (!depSeleccionada) return
+    setGuardandoNuevaDep(true)
+    setMsgNuevaDep(null)
+    try {
+      const res = await fetch('/api/admin/dependencias', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: depSeleccionada.id, nombre: nuevaDepForm.nombre, departamento: nuevaDepForm.departamento }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setMsgNuevaDep(data.error || 'Error al actualizar la dependencia')
+        return
+      }
+      cargarCatalogoDependencias()
+      aplicarDependenciaAlFormulario(data.dependencia.nombre, nuevaDepForm.departamento)
+      setAltaDependenciaPara(null)
+    } catch {
+      setMsgNuevaDep('Error de conexión')
+    } finally {
+      setGuardandoNuevaDep(false)
+    }
+  }
+
+  const handleEliminarDependenciaRapida = async () => {
+    if (!depSeleccionada) return
+    setEliminandoDepRapida(true)
+    setMsgNuevaDep(null)
+    try {
+      const res = await fetch(`/api/admin/dependencias?id=${depSeleccionada.id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setMsgNuevaDep(data.error || 'Error al eliminar la dependencia')
+        return
+      }
+      cargarCatalogoDependencias()
+      setCatalogoCompletoDep((prev) => prev.filter((d) => d.id !== depSeleccionada.id))
+      setDepSeleccionada(null)
+      setNuevaDepForm({ nombre: '', departamento: '' })
+      setConfirmarEliminarDep(false)
+    } catch {
+      setMsgNuevaDep('Error de conexión')
+    } finally {
+      setEliminandoDepRapida(false)
+    }
+  }
 
   // Carga inicial de usuarios
   const cargarUsuarios = useCallback(async () => {
@@ -260,6 +386,12 @@ export default function DashboardCliente({
     () => Array.from(new Set(usuariosRegistrados.map((u) => u.departamento).filter(Boolean))).sort(),
     [usuariosRegistrados]
   )
+  const sugerenciasDepartamentos = useMemo(() => Array.from(new Set([
+    ...DEPARTAMENTOS_COLOMBIA,
+    ...departamentosUnicosMain,
+    ...departamentosUnicosUsuarios,
+  ])).sort(), [departamentosUnicosMain, departamentosUnicosUsuarios])
+
   const dependenciasUnicasUsuarios = useMemo(() => {
     const base = filtroDepartamentoUsuarios === 'todos'
       ? usuariosRegistrados
@@ -839,7 +971,7 @@ export default function DashboardCliente({
               </>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'usuarios' ? (
           /* ========================================================================= */
           /* TAB 3: GESTIÓN DE USUARIOS (CRUD Y ADMINISTRACIÓN)                         */
           /* ========================================================================= */
@@ -1059,7 +1191,7 @@ export default function DashboardCliente({
               )}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* ========================================================================= */}
@@ -1161,35 +1293,35 @@ export default function DashboardCliente({
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700">Departamento</label>
-                  <select
+                  <input
+                    type="text"
+                    list="sugerencias-departamentos"
                     value={formDataCrear.departamento}
                     onChange={(e) => setFormDataCrear({ ...formDataCrear, departamento: e.target.value.toUpperCase() })}
                     className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
-                  >
-                    <option value="">Selecciona...</option>
-                    {Array.from(new Set(usuariosRegistrados.map(u => u.departamento).filter(Boolean))).sort().map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                    {!Array.from(new Set(usuariosRegistrados.map(u => u.departamento).filter(Boolean))).includes(formDataCrear.departamento) && formDataCrear.departamento !== '' && (
-                      <option value={formDataCrear.departamento}>{formDataCrear.departamento}</option>
-                    )}
-                  </select>
+                    placeholder="Buscar o escribir..."
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700">Dependencia / Funciones</label>
-                  <select
-                    value={formDataCrear.dependencia_funciones}
-                    onChange={(e) => setFormDataCrear({ ...formDataCrear, dependencia_funciones: e.target.value.toUpperCase() })}
-                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
-                  >
-                    <option value="">Selecciona...</option>
-                    {Array.from(new Set([...catalogoDependencias, ...usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean)])).sort().map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                    {!catalogoDependencias.includes(formDataCrear.dependencia_funciones) && !usuariosRegistrados.some(u => u.dependencia_funciones === formDataCrear.dependencia_funciones) && formDataCrear.dependencia_funciones !== '' && (
-                      <option value={formDataCrear.dependencia_funciones}>{formDataCrear.dependencia_funciones}</option>
-                    )}
-                  </select>
+                  <div className="mt-1 flex gap-1.5">
+                    <input
+                      type="text"
+                      list="sugerencias-dependencias"
+                      value={formDataCrear.dependencia_funciones}
+                      onChange={(e) => setFormDataCrear({ ...formDataCrear, dependencia_funciones: e.target.value.toUpperCase() })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#EA580C] focus:outline-none"
+                      placeholder="Buscar o escribir..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => abrirGestionDependencia('crear')}
+                      className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border border-[#1F4E79] text-[#1F4E79] hover:bg-blue-50"
+                      title="Crear una dependencia nueva"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1307,35 +1439,35 @@ export default function DashboardCliente({
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700">Departamento</label>
-                  <select
+                  <input
+                    type="text"
+                    list="sugerencias-departamentos"
                     value={formDataEditar.departamento}
                     onChange={(e) => setFormDataEditar({ ...formDataEditar, departamento: e.target.value })}
                     className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
-                  >
-                    <option value="">Selecciona...</option>
-                    {Array.from(new Set(usuariosRegistrados.map(u => u.departamento).filter(Boolean))).sort().map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                    {!Array.from(new Set(usuariosRegistrados.map(u => u.departamento).filter(Boolean))).includes(formDataEditar.departamento) && formDataEditar.departamento !== '' && (
-                      <option value={formDataEditar.departamento}>{formDataEditar.departamento}</option>
-                    )}
-                  </select>
+                    placeholder="Buscar o escribir..."
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700">Dependencia / Funciones</label>
-                  <select
-                    value={formDataEditar.dependencia_funciones}
-                    onChange={(e) => setFormDataEditar({ ...formDataEditar, dependencia_funciones: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
-                  >
-                    <option value="">Selecciona...</option>
-                    {Array.from(new Set([...catalogoDependencias, ...usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean)])).sort().map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                    {!catalogoDependencias.includes(formDataEditar.dependencia_funciones) && !usuariosRegistrados.some(u => u.dependencia_funciones === formDataEditar.dependencia_funciones) && formDataEditar.dependencia_funciones !== '' && (
-                      <option value={formDataEditar.dependencia_funciones}>{formDataEditar.dependencia_funciones}</option>
-                    )}
-                  </select>
+                  <div className="mt-1 flex gap-1.5">
+                    <input
+                      type="text"
+                      list="sugerencias-dependencias"
+                      value={formDataEditar.dependencia_funciones}
+                      onChange={(e) => setFormDataEditar({ ...formDataEditar, dependencia_funciones: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                      placeholder="Buscar o escribir..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => abrirGestionDependencia('editar')}
+                      className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border border-[#1F4E79] text-[#1F4E79] hover:bg-blue-50"
+                      title="Crear una dependencia nueva"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1543,6 +1675,152 @@ export default function DashboardCliente({
           </div>
         </div>
       )}
+
+      {/* Mini-modal: Gestión rápida de dependencia (botón "+" junto al campo Dependencia) */}
+      {altaDependenciaPara && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                <Building2 className="h-5 w-5 text-[#1F4E79]" />
+                Dependencias
+              </h3>
+              <button onClick={() => setAltaDependenciaPara(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Selector de modo: crear nueva vs editar/eliminar existente */}
+            <div className="mb-4 flex rounded-lg bg-gray-100 p-1 text-sm font-medium">
+              <button
+                onClick={() => { setModoGestionDep('crear'); setNuevaDepForm({ nombre: '', departamento: '' }); setDepSeleccionada(null); setMsgNuevaDep(null) }}
+                className={`flex-1 rounded-md py-1.5 transition ${modoGestionDep === 'crear' ? 'bg-white shadow-sm text-[#1F4E79]' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Crear nueva
+              </button>
+              <button
+                onClick={() => { setModoGestionDep('existente'); setNuevaDepForm({ nombre: '', departamento: '' }); setDepSeleccionada(null); setMsgNuevaDep(null) }}
+                className={`flex-1 rounded-md py-1.5 transition ${modoGestionDep === 'existente' ? 'bg-white shadow-sm text-[#1F4E79]' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Editar / Eliminar
+              </button>
+            </div>
+
+            {msgNuevaDep && (
+              <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{msgNuevaDep}</div>
+            )}
+
+            {modoGestionDep === 'existente' && (
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-gray-700">Buscar dependencia existente</label>
+                <input
+                  type="text"
+                  list="sugerencias-dependencias"
+                  defaultValue=""
+                  onChange={(e) => seleccionarDependenciaExistente(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                  placeholder="Escribe para buscar..."
+                  autoFocus
+                />
+                {!depSeleccionada && (
+                  <p className="mt-1 text-xs text-gray-400">Escribe el nombre exacto de una dependencia del catálogo para editarla o eliminarla.</p>
+                )}
+              </div>
+            )}
+
+            {(modoGestionDep === 'crear' || depSeleccionada) && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Nombre de la dependencia</label>
+                  <input
+                    type="text"
+                    value={nuevaDepForm.nombre}
+                    onChange={(e) => setNuevaDepForm({ ...nuevaDepForm, nombre: e.target.value.toUpperCase() })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                    placeholder="PROCURADURIA REGIONAL DE INSTRUCCION..."
+                    autoFocus={modoGestionDep === 'crear'}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700">Departamento (opcional)</label>
+                  <input
+                    type="text"
+                    list="sugerencias-departamentos"
+                    value={nuevaDepForm.departamento}
+                    onChange={(e) => setNuevaDepForm({ ...nuevaDepForm, departamento: e.target.value.toUpperCase() })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black focus:border-[#1F4E79] focus:outline-none"
+                    placeholder="Buscar o escribir un departamento..."
+                  />
+                </div>
+
+                {modoGestionDep === 'existente' && depSeleccionada && confirmarEliminarDep && (
+                  <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                    ¿Seguro que deseas eliminar <strong>{depSeleccionada.nombre}</strong> del catálogo? Esto no afecta a las personas que ya la tengan asignada, solo deja de aparecer como opción para nuevos registros.
+                    <div className="mt-2 flex justify-end gap-2">
+                      <button onClick={() => setConfirmarEliminarDep(false)} className="rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100">
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleEliminarDependenciaRapida}
+                        disabled={eliminandoDepRapida}
+                        className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                      >
+                        {eliminandoDepRapida ? 'Eliminando...' : 'Sí, eliminar'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="mt-6 flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
+              {modoGestionDep === 'existente' && depSeleccionada ? (
+                <button
+                  onClick={() => setConfirmarEliminarDep(true)}
+                  className="rounded-lg px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+                >
+                  Eliminar
+                </button>
+              ) : <span />}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setAltaDependenciaPara(null)}
+                  className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100"
+                >
+                  Cancelar
+                </button>
+                {modoGestionDep === 'crear' ? (
+                  <button
+                    onClick={handleCrearDependenciaRapida}
+                    disabled={guardandoNuevaDep || !nuevaDepForm.nombre}
+                    className="rounded-lg bg-[#1F4E79] px-4 py-2 text-sm font-semibold text-white hover:bg-[#183d61] disabled:opacity-50"
+                  >
+                    {guardandoNuevaDep ? 'Creando...' : 'Crear y usar'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleActualizarDependenciaRapida}
+                    disabled={guardandoNuevaDep || !depSeleccionada || !nuevaDepForm.nombre}
+                    className="rounded-lg bg-[#1F4E79] px-4 py-2 text-sm font-semibold text-white hover:bg-[#183d61] disabled:opacity-50"
+                  >
+                    {guardandoNuevaDep ? 'Guardando...' : 'Guardar y usar'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sugerencias para los combobox de Departamento y Dependencia (buscar o escribir) */}
+      <datalist id="sugerencias-departamentos">
+        {sugerenciasDepartamentos.map((d) => <option key={d} value={d} />)}
+      </datalist>
+      <datalist id="sugerencias-dependencias">
+        {Array.from(new Set([...catalogoDependencias, ...usuariosRegistrados.map(u => u.dependencia_funciones).filter(Boolean)])).sort().map((d) => (
+          <option key={d} value={d} />
+        ))}
+      </datalist>
 
       {/* Footer Institucional */}
       <footer className="mt-16 w-full border-t border-gray-200 pt-8 pb-4 text-center">
