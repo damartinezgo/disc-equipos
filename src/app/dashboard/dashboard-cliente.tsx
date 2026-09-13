@@ -543,6 +543,7 @@ export default function DashboardCliente({
             reportTexts,
             combinacion,
             rawScores,
+            subcategoryScores,
             radarBase64
           )
 
