@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   const perfilesData = perfilesRes.flatMap((r) => r.data ?? [])
 
   const respuestasRes = await Promise.all(
-    chunks.map((c) => admin.from('respuestas').select('user_id, completado').in('user_id', c))
+    chunks.map((c) => admin.from('respuestas').select('user_id, completado, respuestas_mas, respuestas_menos').in('user_id', c))
   )
   const respuestasData = respuestasRes.flatMap((r) => r.data ?? [])
 
@@ -101,16 +101,25 @@ export async function POST(req: NextRequest) {
       perfil?.segundo_apellido || meta.segundo_apellido,
     ].filter(Boolean).join(' ') || 'Sin nombre'
 
-    return {
+    const resps = respuestasMap.get(uid)
+    const baseObj = {
       user_id: uid,
       nombre: nombreCompleto,
       cedula: perfil?.cedula || meta.cedula || '',
       correo: emailMap.get(uid) ?? '',
       departamento: perfil?.departamento || meta.departamento || '',
       dependencia_funciones: perfil?.dependencia_funciones || meta.dependencia_funciones || '',
-      completado: respuestasMap.get(uid)?.completado ? 'Sí' : 'No',
+      completado: resps?.completado ? 'Sí' : 'No',
       ...scoringMap.get(uid),
     }
+
+    const rowObj: Record<string, any> = { ...baseObj }
+    for (let i = 1; i <= 32; i++) {
+      rowObj[`item_${i}_mas`] = resps?.respuestas_mas?.[String(i)] || ''
+      rowObj[`item_${i}_menos`] = resps?.respuestas_menos?.[String(i)] || ''
+    }
+
+    return rowObj
   })
 
   // ── Construir el workbook desde cero ──────────────────────────────────────
@@ -152,6 +161,11 @@ export async function POST(req: NextRequest) {
     { header: 'Dinámica equipo S', key: 'dinamica_equipo_s', width: 16 },
     { header: 'Dinámica equipo C', key: 'dinamica_equipo_c', width: 16 },
   ]
+
+  for (let i = 1; i <= 32; i++) {
+    encabezados.push({ header: `Item ${i} (+)`, key: `item_${i}_mas`, width: 10 })
+    encabezados.push({ header: `Item ${i} (-)`, key: `item_${i}_menos`, width: 10 })
+  }
 
   hoja.columns = encabezados
 

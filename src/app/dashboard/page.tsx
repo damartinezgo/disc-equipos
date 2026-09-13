@@ -78,7 +78,12 @@ export default async function DashboardPage() {
       // Cada ítem tiene una respuesta MÁS y una MENOS; el total de ítems es 32
       const itemsRespondidos = Math.max(masCount, menosCount)
       const porcentaje = Math.min(Math.round((itemsRespondidos / 32) * 100), 100)
-      return [r.user_id, { completado: r.completado, porcentaje }]
+      return [r.user_id, {
+        completado: r.completado,
+        porcentaje,
+        respuestas_mas: r.respuestas_mas ?? null,
+        respuestas_menos: r.respuestas_menos ?? null,
+      }]
     })
   )
   const scoringMap = new Map(
@@ -113,6 +118,8 @@ export default async function DashboardPage() {
         }],
         completado,
         porcentaje,
+        respuestas_mas: respData?.respuestas_mas ?? null,
+        respuestas_menos: respData?.respuestas_menos ?? null,
       // Scoring (null si no completó)
       d_global: scoring?.d_global ?? null,
       i_global: scoring?.i_global ?? null,

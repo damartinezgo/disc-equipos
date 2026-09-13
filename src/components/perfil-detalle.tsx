@@ -6,6 +6,8 @@ import { ArrowLeft, Activity, Compass, Cpu, Heart, MessageCircle, Shield, User, 
 import type { LucideProps } from '@/lib/icons'
 import GraficoDisc from '@/app/dashboard/[userId]/grafico-disc'
 import itemsData from '@/data/items-disc.json'
+import { DISCReportGenerator } from '@/components/disc/DISCReportGenerator'
+import type { UserResponses } from '@/lib/disc/discService'
 
 const CATEGORIAS = [
   { key: 'perfil_trabajo', label: 'Perfil de trabajo' },
@@ -90,6 +92,7 @@ export default function PerfilDetalle({
   textoPerfil,
   respuestasMas,
   respuestasMenos,
+  telefono,
 }: {
   nombre: string
   cedula?: string
@@ -101,6 +104,7 @@ export default function PerfilDetalle({
   textoPerfil: TextoPerfil
   respuestasMas: Record<string, string> | null
   respuestasMenos: Record<string, string> | null
+  telefono?: string
 }) {
   const tabs = Array.from(new Set(rubrica?.map((r) => r.categoria) ?? []))
   const [mainTab, setMainTab] = useState<'vision' | 'recomendaciones' | 'respuestas'>('vision')
@@ -130,6 +134,32 @@ export default function PerfilDetalle({
   })
 
   const activeModulo = selectedModulo || modulosConRespuestas[0] || null
+  
+  // Format responses for DISCReportGenerator
+  const userResponsesFormatted: UserResponses = {};
+  if (respuestasMas && respuestasMenos) {
+    for (let i = 1; i <= 32; i++) {
+      const mas = respuestasMas[String(i)]
+      const menos = respuestasMenos[String(i)]
+      if (mas && menos && ['A', 'B', 'C', 'D'].includes(mas) && ['A', 'B', 'C', 'D'].includes(menos)) {
+        userResponsesFormatted[i] = {
+          mas: mas as 'A' | 'B' | 'C' | 'D',
+          menos: menos as 'A' | 'B' | 'C' | 'D',
+        };
+      }
+    }
+  }
+
+  const evaluadoObj = {
+    nombre: nombre || 'Usuario',
+    cargo: dependencia || 'Sin cargo',
+    fecha: new Date().toLocaleDateString('es-CO'),
+    cedula: cedula || '',
+    correo: correo || '',
+    dependencia: dependencia || '',
+    departamento: departamento || '',
+    telefono: telefono || '',
+  };
 
   return (
     <>
@@ -157,6 +187,8 @@ export default function PerfilDetalle({
                     C.C. {cedula}
                   </span>
                 )}
+                {/* PDF Download icon-button */}
+                <DISCReportGenerator evaluado={evaluadoObj} responses={userResponsesFormatted} variant="button" />
               </div>
               <div className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 {departamento && <span className="font-semibold text-slate-700">{departamento}</span>}

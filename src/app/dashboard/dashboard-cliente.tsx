@@ -20,6 +20,7 @@ import {
   Trash2,
   Upload,
   FileSpreadsheet,
+  FileArchive,
   X,
   RefreshCw,
   FileUp,
@@ -29,6 +30,15 @@ import {
 } from '@/lib/icons'
 import GraficosDashboard from './graficos-dashboard'
 import MapaCalor from './mapa-calor'
+import { createDISCPdfDoc } from '@/components/disc/DISCPdfReport'
+import { renderRadarChartBase64 } from '@/components/disc/DISCCharts'
+import {
+  calculateRawScores,
+  calculateSubcategoryScores,
+  determineStyleCombination,
+  getReportFeedback,
+  type UserResponses,
+} from '@/lib/disc/discService'
 
 const COLOR_ESTILO: Record<string, string> = {
   D: '#1F4E79',
@@ -66,6 +76,8 @@ type Persona = {
     created_at: string
     correo: string
   }[]
+  respuestas_mas?: Record<string, string> | null
+  respuestas_menos?: Record<string, string> | null
   // Scoring — null si aún no completó
   d_global: number | null
   i_global: number | null
@@ -135,6 +147,11 @@ export default function DashboardCliente({
   const [exportando, setExportando] = useState(false)
   const [paginaActual, setPaginaActual] = useState(1)
   const REGISTROS_POR_PAGINA = 10
+
+  // --- Selección múltiple para descarga ZIP ---
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [descargandoZip, setDescargandoZip] = useState(false)
+  const [zipProgreso, setZipProgreso] = useState<{ actual: number; total: number } | null>(null)
 
   // --- Gestión de Usuarios State ---
   const [usuariosRegistrados, setUsuariosRegistrados] = useState<UsuarioRegistrado[]>([])
@@ -425,6 +442,135 @@ export default function DashboardCliente({
     const start = (paginaUsuarios - 1) * USUARIOS_POR_PAGINA
     return usuariosFiltrados.slice(start, start + USUARIOS_POR_PAGINA)
   }, [usuariosFiltrados, paginaUsuarios])
+
+  // --- SELECCIÓN MÚLTIPLE ---
+  const completadasFiltradas = useMemo(() => filtradas.filter((p) => p.completado), [filtradas])
+
+  function toggleSelectAll() {
+    if (selectedIds.size === completadasFiltradas.length && completadasFiltradas.length > 0) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(completadasFiltradas.map((p) => p.user_id)))
+    }
+  }
+
+  function toggleSelectOne(userId: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(userId)) {
+        next.delete(userId)
+      } else {
+        next.add(userId)
+      }
+      return next
+    })
+  }
+
+  // --- DESCARGA MASIVA ZIP ---
+  async function handleBulkDownload() {
+    const seleccionadas = filtradas.filter((p) => selectedIds.has(p.user_id) && p.completado)
+    if (seleccionadas.length === 0) return
+
+    setDescargandoZip(true)
+    setZipProgreso({ actual: 0, total: seleccionadas.length })
+
+    try {
+      // Importar JSZip dinámicamente para no aumentar el bundle inicial
+      const { default: JSZip } = await import('jszip')
+      const zip = new JSZip()
+
+      for (let i = 0; i < seleccionadas.length; i++) {
+        const p = seleccionadas[i]
+        setZipProgreso({ actual: i + 1, total: seleccionadas.length })
+
+        try {
+          const perf = p.perfiles?.[0]
+          const nombreCompleto = [perf?.nombre, perf?.primer_apellido, perf?.segundo_apellido]
+            .filter(Boolean).join(' ') || 'evaluado'
+
+          // Si no hay datos de respuestas en memoria, buscarlos en el batch endpoint
+          let resMas = p.respuestas_mas
+          let resMenos = p.respuestas_menos
+
+          if (!resMas || !resMenos) {
+            const batchRes = await fetch('/api/admin/respuestas-batch', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userIds: [p.user_id] }),
+            })
+            if (batchRes.ok) {
+              const batchData = await batchRes.json()
+              const entry = (batchData.respuestas ?? [])[0]
+              if (entry) {
+                resMas = entry.respuestas_mas
+                resMenos = entry.respuestas_menos
+              }
+            }
+          }
+
+          // Convertir respuestas_mas/menos al formato UserResponses (índice numérico)
+          const userResponses: UserResponses = {}
+          const mas_map = resMas ?? {}
+          const menos_map = resMenos ?? {}
+          for (let idx = 1; idx <= 32; idx++) {
+            const masVal = mas_map[String(idx)]
+            const menosVal = menos_map[String(idx)]
+            if (masVal && menosVal && ['A','B','C','D'].includes(masVal) && ['A','B','C','D'].includes(menosVal)) {
+              userResponses[idx] = {
+                mas: masVal as 'A'|'B'|'C'|'D',
+                menos: menosVal as 'A'|'B'|'C'|'D',
+              }
+            }
+          }
+
+          const rawScores = calculateRawScores(userResponses)
+          const subcategoryScores = calculateSubcategoryScores(userResponses)
+          const combinacion = determineStyleCombination(rawScores)
+          const reportTexts = getReportFeedback(combinacion)
+
+          // Generar imagen radar de forma headless (síncrona)
+          const radarBase64 = renderRadarChartBase64(rawScores, subcategoryScores, combinacion)
+
+          const { createDISCPdfDoc: buildDoc } = await import('@/components/disc/DISCPdfReport')
+          const nombreCompleto2 = [perf?.nombre, perf?.primer_apellido, perf?.segundo_apellido]
+            .filter(Boolean).join(' ') || 'evaluado'
+          const { getBlob, fileName } = await buildDoc(
+            {
+              nombre: nombreCompleto2,
+              cargo: perf?.dependencia_funciones || '',
+              fecha: new Date().toLocaleDateString('es-CO'),
+            },
+            reportTexts,
+            combinacion,
+            rawScores,
+            radarBase64
+          )
+
+          const arrayBuffer = await getBlob().arrayBuffer()
+          zip.file(fileName || `DISC_${nombreCompleto.replace(/\s+/g, '_')}.pdf`, arrayBuffer)
+        } catch (err) {
+          console.error(`Error generando PDF para ${p.user_id}:`, err)
+        }
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+      const url = URL.createObjectURL(zipBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `informes_DISC_${new Date().toISOString().slice(0, 10)}.zip`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setSelectedIds(new Set())
+    } catch (err) {
+      console.error('Error generando ZIP:', err)
+      alert('Ocurrió un error al generar el archivo ZIP. Por favor intente de nuevo.')
+    } finally {
+      setDescargandoZip(false)
+      setZipProgreso(null)
+    }
+  }
 
   // --- EXPORTAR DISC ---
   async function exportar() {
@@ -792,6 +938,7 @@ export default function DashboardCliente({
                     setFiltroEstado('todos')
                     setBusqueda('')
                     setPaginaActual(1)
+                    setSelectedIds(new Set())
                   }}
                   className="flex-1 whitespace-nowrap rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
                 >
@@ -802,18 +949,65 @@ export default function DashboardCliente({
                   onClick={exportar}
                   disabled={exportando || filtradas.length === 0}
                   className="inline-flex items-center justify-center rounded-lg bg-[#1F4E79] px-3 py-2 text-white shadow-sm transition hover:bg-[#173A5C] disabled:opacity-50"
-                  title="Exportar Excel"
+                  title="Exportar resultados a Excel"
                 >
-                  <Download className="h-4 w-4" />
+                  <FileSpreadsheet className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
+            {/* Barra de selección múltiple */}
+            {selectedIds.size > 0 && (
+              <div className="flex items-center justify-between rounded-xl bg-[#1F4E79]/10 border border-[#1F4E79]/30 px-4 py-2.5">
+                <span className="text-sm font-semibold text-[#1F4E79]">
+                  {selectedIds.size} persona{selectedIds.size !== 1 ? 's' : ''} seleccionada{selectedIds.size !== 1 ? 's' : ''}
+                </span>
+                <div className="flex items-center gap-2">
+                  {zipProgreso && (
+                    <span className="text-xs font-medium text-[#1F4E79] bg-white/70 px-2 py-1 rounded-lg">
+                      Generando {zipProgreso.actual}/{zipProgreso.total}…
+                    </span>
+                  )}
+                  <button
+                    onClick={handleBulkDownload}
+                    disabled={descargandoZip}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#1F4E79] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#173A5C] disabled:opacity-60"
+                  >
+                    {descargandoZip ? (
+                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      <FileArchive className="h-4 w-4" />
+                    )}
+                    {descargandoZip ? 'Generando ZIP…' : 'Descargar seleccionados (.zip)'}
+                  </button>
+                  <button
+                    onClick={() => setSelectedIds(new Set())}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 transition"
+                    title="Quitar selección"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Tabla de Resultados DISC Optimizada */}
             <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-              <table className="w-full min-w-[860px] text-sm">
+              <table className="w-full min-w-[900px] text-sm">
                 <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 border-b border-gray-200">
                   <tr>
+                    <th className="px-4 py-3.5 w-10">
+                      <input
+                        type="checkbox"
+                        title="Seleccionar todos los completados"
+                        checked={completadasFiltradas.length > 0 && selectedIds.size === completadasFiltradas.length}
+                        ref={(el) => {
+                          if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < completadasFiltradas.length
+                        }}
+                        onChange={toggleSelectAll}
+                        className="h-4 w-4 rounded border-gray-300 text-[#1F4E79] accent-[#1F4E79] cursor-pointer"
+                      />
+                    </th>
                     <th className="px-5 py-3.5">Nombre y Apellidos</th>
                     <th className="px-4 py-3.5">Departamento</th>
                     <th className="px-4 py-3.5 min-w-[200px]">Dependencia</th>
@@ -830,8 +1024,21 @@ export default function DashboardCliente({
                   {paginadas.map((p) => {
                     const perf = p.perfiles?.[0]
                     const nombreCompleto = [perf?.nombre, perf?.primer_apellido, perf?.segundo_apellido].filter(Boolean).join(' ') || 'Sin nombre'
+                    const isSelected = selectedIds.has(p.user_id)
                     return (
-                      <tr key={p.user_id} className="transition-colors hover:bg-gray-50/70">
+                      <tr key={p.user_id} className={`transition-colors hover:bg-gray-50/70 ${isSelected ? 'bg-blue-50/60' : ''}`}>
+                        <td className="px-4 py-3.5">
+                          {p.completado ? (
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelectOne(p.user_id)}
+                              className="h-4 w-4 rounded border-gray-300 text-[#1F4E79] accent-[#1F4E79] cursor-pointer"
+                            />
+                          ) : (
+                            <span className="inline-block h-4 w-4" />
+                          )}
+                        </td>
                         <td className="px-5 py-3.5 font-medium text-gray-900">
                           {nombreCompleto}
                         </td>
@@ -898,7 +1105,7 @@ export default function DashboardCliente({
                   })}
                   {paginadas.length === 0 && (
                     <tr>
-                      <td colSpan={10} className="px-5 py-12 text-center text-gray-400">
+                      <td colSpan={11} className="px-5 py-12 text-center text-gray-400">
                         {listaPersonas.length === 0
                           ? 'Aún no hay usuarios en el sistema.'
                           : 'No se encontraron personas con los filtros seleccionados.'}

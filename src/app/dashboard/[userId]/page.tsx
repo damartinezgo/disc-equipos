@@ -55,6 +55,7 @@ export default async function DetallePersonaPage({
   const cedula = perfil?.cedula || meta.cedula || ''
   const departamento = perfil?.departamento || meta.departamento || ''
   const dependencia = perfil?.dependencia_funciones || meta.dependencia_funciones || ''
+  const telefono = perfil?.telefono || meta.telefono || ''
   const correo = authRes?.user?.email || ''
 
   const { data: rubrica } = await supabase
@@ -82,6 +83,7 @@ export default async function DetallePersonaPage({
           cedula={cedula}
           departamento={departamento}
           dependencia={dependencia}
+          telefono={telefono}
           correo={correo}
           scoring={scoring}
           rubrica={rubrica ?? []}
